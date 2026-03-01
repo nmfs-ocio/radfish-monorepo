@@ -197,15 +197,99 @@ $disabled-dark: #9a9a9a;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// HEADER
+// HEADER & NAVIGATION - Match NOAA Fisheries site styling
 // -----------------------------------------------------------------------------
 
-/* Header Background */
-header.usa-header {
-  // background-color: var(--radfish-color-primary);
+/* Mobile nav drawer - white background with blue links (match NOAA mobile menu) */
+@media (max-width: 63.99em) {
+  .usa-header--extended .usa-navbar {
+    border-bottom: none;
+  }
+
+  .usa-nav {
+    background-color: $base-lightest;
+  }
+
+  .usa-nav__primary > .usa-nav__primary-item > a,
+  .usa-nav__primary > .usa-nav__primary-item > button,
+  .usa-nav__primary a:not(.usa-button):not(.usa-current) {
+    color: var(--radfish-color-primary, #0055a4);
+    font-weight: 700;
+  }
+
+  .usa-nav__primary > .usa-nav__primary-item > a:hover,
+  .usa-nav__primary > .usa-nav__primary-item > button:hover,
+  .usa-nav__primary a:not(.usa-button):not(.usa-current):hover {
+    color: var(--radfish-color-primary-dark, #00467f);
+  }
+
+  .usa-nav__primary button[aria-expanded=false] span::after,
+  .usa-nav__primary button[aria-expanded=true] span::after {
+    background-color: var(--radfish-color-primary, #0055a4);
+  }
+
+  .usa-nav__submenu a {
+    color: var(--radfish-color-primary, #0055a4);
+  }
 }
 
-/* Header Logo Width - Minimum 72px for agency logos */
+/* Desktop Navigation Bar - Dark blue band */
+@media (min-width: 64em) {
+  .usa-nav {
+    background-color: var(--radfish-color-primary-dark, #00467f);
+  }
+
+  .usa-nav__primary > .usa-nav__primary-item > a,
+  .usa-nav__primary > .usa-nav__primary-item > button {
+    color: $base-lightest;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 20px 10px;
+    line-height: 24px;
+    height: 64px;
+  }
+
+  .usa-nav__primary > .usa-nav__primary-item > a:hover,
+  .usa-nav__primary > .usa-nav__primary-item > button:hover {
+    color: $base-lightest;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .usa-nav__primary > .usa-nav__primary-item > .usa-current,
+  .usa-nav__primary > .usa-nav__primary-item > .usa-current::after {
+    color: $base-lightest;
+  }
+
+  .usa-nav__primary button[aria-expanded=false] span::after,
+  .usa-nav__primary button[aria-expanded=true] span::after {
+    background-color: $base-lightest;
+  }
+
+  /* Active/expanded tab - white background with blue text (match NOAA) */
+  .usa-nav__primary > .usa-nav__primary-item > button[aria-expanded=true] {
+    background-color: $base-lightest;
+    color: var(--radfish-color-primary, #0055a4);
+  }
+
+  .usa-nav__submenu {
+    background-color: $base-lightest;
+    border: 1px solid $base-lighter;
+    border-top: none;
+  }
+
+  .usa-nav__submenu .usa-nav__submenu-item a {
+    color: var(--radfish-color-primary, #0055a4);
+  }
+
+  .usa-nav__submenu .usa-nav__submenu-item a:hover {
+    color: var(--radfish-color-primary-dark, #00467f);
+  }
+}
+
+/* Secondary nav links (top right - sits on white header background) */
+.usa-nav__secondary-links a {
+  color: $base-darker;
+}
 
 // -----------------------------------------------------------------------------
 // EXAMPLE OVERRIDES (uncomment to use)
@@ -218,7 +302,7 @@ header.usa-header {
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: white;
+  color: $base-lightest;
 }
 
 .region-badge--national { background-color: var(--noaa-region-national); }
@@ -237,6 +321,56 @@ header.usa-header {
 
 /* Example: Custom card styles */
 /* .usa-card {
-  border-color: color("base-light");
+  border-color: $base-light ;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 } */
+
+// -----------------------------------------------------------------------------
+// CONTAINER WIDTH - Match NOAA Fisheries site container behavior
+// Both the logo area and nav bar use the same widths so they align.
+// NOAA uses: 750px (sm) / 970px (md) / 1170px (lg), centered, with 15px padding
+// -----------------------------------------------------------------------------
+
+.usa-header--extended .usa-navbar,
+.usa-header--extended .usa-nav__inner,
+.grid-container {
+  max-width: 1170px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+@media (max-width: 991px) {
+  .usa-header--extended .usa-navbar,
+  .usa-header--extended .usa-nav__inner,
+  .grid-container {
+    max-width: 750px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .usa-header--extended .usa-navbar,
+  .usa-header--extended .usa-nav__inner,
+  .grid-container {
+    max-width: 970px;
+  }
+}
+
+@media (min-width: 64em) {
+  .usa-header--extended .usa-navbar {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Logo vertical spacing - match NOAA site-header__branding padding */
+.usa-header--extended .usa-navbar {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.usa-header--extended .usa-navbar .header-logo-link {
+  padding-top: 15px;
+  padding-bottom: 10px;
+}

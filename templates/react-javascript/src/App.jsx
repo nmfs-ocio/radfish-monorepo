@@ -77,15 +77,6 @@ function App({ application }) {
     </Link>,
   ];
 
-  const secondaryItems = [
-    <Link to="/" key="one">
-      Simple link one
-    </Link>,
-    <Link to="/" key="two">
-      Simple link two
-    </Link>,
-  ];
-
   return (
     <Application application={application}>
       <a className="usa-skipnav" href="#main-content">
@@ -110,7 +101,7 @@ function App({ application }) {
             </div>
             <ExtendedNav
               primaryItems={primaryItems}
-              secondaryItems={secondaryItems}
+              secondaryItems={[]}
               mobileExpanded={isExpanded}
               onToggleMobileNav={handleToggleMobileNav}
             />

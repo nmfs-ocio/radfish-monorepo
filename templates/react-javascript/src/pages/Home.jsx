@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 
 function HomePage() {
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem 1rem" }}>
+    <div className="page-content">
       <h1>Welcome to RADFish</h1>
 
       <p>
@@ -52,29 +52,29 @@ function HomePage() {
       </ul>
 
       <h2>Resources</h2>
-      <p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         <Link
           to="https://nmfs-radfish.github.io/radfish/developer-documentation/getting-started"
           target="_blank"
         >
           <Button type="button">Documentation</Button>
-        </Link>{" "}
+        </Link>
         <Link to="https://github.com/NMFS-RADFish/radfish" target="_blank">
           <Button type="button" outline>
             GitHub
           </Button>
-        </Link>{" "}
+        </Link>
         <Link to="https://trussworks.github.io/react-uswds/?path=/docs/welcome--docs" target="_blank">
           <Button type="button" outline>
             React USWDS
           </Button>
-        </Link>{" "}
+        </Link>
         <Link to="https://designsystem.digital.gov/" target="_blank">
           <Button type="button" outline>
             USWDS
           </Button>
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

@@ -34,7 +34,6 @@ body {
 }
 
 .header-logo {
-  margin-top: 10px;
   max-width: 210px;
   width: 100%;
 }
@@ -44,12 +43,7 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-}
-
-@media (max-width: 63.99em) {
-  .header-logo {
-    max-width: 110px;
-  }
+  height: 5rem;
 }
 
 @media (min-width: 64em) {
