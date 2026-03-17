@@ -21,8 +21,7 @@
   "license": "ISC",
   "description": "",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.21.0",
