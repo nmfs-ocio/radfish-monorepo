@@ -1,4 +1,4 @@
-name: Publish @nmfs-radfish/react-radfish to NPM
+name: Publish @nmfs-ocio/react-radfish to NPM
 
 on:
   workflow_dispatch:
@@ -99,7 +99,7 @@ jobs:
         run: |
           set -e
           git add packages/react-radfish/package.json
-          git commit -m "chore(release): bump @nmfs-radfish/react-radfish to ${{ steps.bump-version.outputs.new_version }}"
+          git commit -m "chore(release): bump @nmfs-ocio/react-radfish to ${{ steps.bump-version.outputs.new_version }}"
           
       - name: Create and push tags
         if: success()
@@ -126,7 +126,7 @@ jobs:
           tag_name: "react-radfish@${{ steps.bump-version.outputs.new_version }}"
           release_name: "react-radfish@${{ steps.bump-version.outputs.new_version }}"
           body: |
-            Release of @nmfs-radfish/react-radfish version ${{ steps.bump-version.outputs.new_version }}
+            Release of @nmfs-ocio/react-radfish version ${{ steps.bump-version.outputs.new_version }}
             
             ## Changes
             See [commit history](https://github.com/${{ github.repository }}/commits/react-radfish@${{ steps.bump-version.outputs.new_version }}) for detailed changes.

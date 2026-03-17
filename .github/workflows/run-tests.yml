@@ -43,7 +43,7 @@ jobs:
         working-directory: .
 
       - name: Link local packages into template
-        run: npm link @nmfs-radfish/radfish @nmfs-radfish/react-radfish @nmfs-radfish/vite-plugin-radfish-theme
+        run: npm link @nmfs-ocio/radfish @nmfs-ocio/react-radfish @nmfs-ocio/vite-plugin-radfish-theme
         working-directory: templates/react-javascript
 
       - name: Build project

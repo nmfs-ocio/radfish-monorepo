@@ -1,7 +1,7 @@
 import "./index.css";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { useState } from "react";
-import { Application } from "@nmfs-radfish/react-radfish";
+import { Application } from "@nmfs-ocio/react-radfish";
 import {
   GridContainer,
   Title,

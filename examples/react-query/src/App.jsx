@@ -2,7 +2,7 @@ import React from "react";
 import "./index.css";
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import { GridContainer } from "@trussworks/react-uswds";
-import { Application } from "@nmfs-radfish/react-radfish";
+import { Application } from "@nmfs-ocio/react-radfish";
 import HomePage from "./pages/Home";
 
 const App = () => {

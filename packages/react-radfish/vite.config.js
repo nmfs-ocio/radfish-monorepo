@@ -7,11 +7,11 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "index.js"),
-      name: "@nmfs-radfish/react-radfish",
+      name: "@nmfs-ocio/react-radfish",
       fileName: (format) => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ["react", "react-dom", "@nmfs-radfish/radfish"],
+      external: ["react", "react-dom", "@nmfs-ocio/radfish"],
       output: {
         globals: {
           react: "React",
