@@ -1,6 +1,6 @@
 import "../index.css";
 import React, { useEffect, useRef, useState } from "react";
-import { DatePicker } from "@nmfs-radfish/react-radfish";
+import { DatePicker } from "@nmfs-ocio/react-radfish";
 import {
   Button,
   Fieldset,

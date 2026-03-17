@@ -1,6 +1,6 @@
 import React from "react";
 import { Alert, Button, Link } from "@trussworks/react-uswds";
-import { Table } from "@nmfs-radfish/react-radfish";
+import { Table } from "@nmfs-ocio/react-radfish";
 
 // mockData is used to populate the table with data, usually this would come from an API call.
 const mockData = [
