@@ -20,6 +20,8 @@ jobs:
       - name: Install workspace dependencies
         run: npm install
         working-directory: .
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lighthouse:
     name: Lighthouse CI
@@ -33,6 +35,8 @@ jobs:
       - name: Install workspace dependencies
         run: npm install
         working-directory: .
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build workspace packages
         run: npm run build --workspaces --if-present
