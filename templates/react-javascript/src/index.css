@@ -26,3 +26,8 @@ body {
       background: white;
   }
 }
+
+.usa-nav-container {
+  position: relative;
+  z-index: 1000;
+}
