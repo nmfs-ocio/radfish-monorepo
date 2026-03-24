@@ -208,6 +208,7 @@ $disabled-dark: #9a9a9a;
 
   .usa-nav {
     background-color: $base-lightest;
+    z-index: 1000;
   }
 
   .usa-nav__primary > .usa-nav__primary-item > a,
