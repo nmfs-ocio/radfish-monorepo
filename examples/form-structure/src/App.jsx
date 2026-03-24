@@ -1,7 +1,7 @@
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Alert, Button, Link, GridContainer } from "@trussworks/react-uswds";
-import { Application } from "@nmfs-radfish/react-radfish";
+import { Application } from "@nmfs-ocio/react-radfish";
 
 import HomePage from "./pages/Home";
 

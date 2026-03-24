@@ -16,10 +16,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "20"
+          registry-url: 'https://npm.pkg.github.com'
 
       - name: Install workspace dependencies
         run: npm install
         working-directory: .
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lighthouse:
     name: Lighthouse CI
@@ -30,9 +33,17 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          registry-url: 'https://npm.pkg.github.com'
+
       - name: Install workspace dependencies
         run: npm install
         working-directory: .
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build workspace packages
         run: npm run build --workspaces --if-present
@@ -43,7 +54,7 @@ jobs:
         working-directory: .
 
       - name: Link local packages into template
-        run: npm link @nmfs-radfish/radfish @nmfs-radfish/react-radfish @nmfs-radfish/vite-plugin-radfish-theme
+        run: npm link @nmfs-ocio/radfish @nmfs-ocio/react-radfish @nmfs-ocio/vite-plugin-radfish-theme
         working-directory: templates/react-javascript
 
       - name: Build project

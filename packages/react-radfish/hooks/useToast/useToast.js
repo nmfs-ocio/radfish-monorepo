@@ -8,6 +8,7 @@ export const TOAST_STATUS = {
 };
 
 export const dispatchToast = ({ message, status, duration = 2000 }) => {
+  // TODO: Rename event to @nmfs-ocio/react-radfish:dispatchToast (breaking change — requires major version bump)
   const toast = new CustomEvent("@nmfs-radfish/react-radfish:dispatchToast", {
     detail: { message, status, duration, expires_at: Date.now() + duration },
   });
@@ -37,9 +38,11 @@ export const useToasts = () => {
       setToasts(nextToasts);
     }
 
+    // TODO: Rename event to @nmfs-ocio/react-radfish:dispatchToast (breaking change — requires major version bump)
     document.addEventListener("@nmfs-radfish/react-radfish:dispatchToast", handleToast);
 
     return () => {
+      // TODO: Rename event to @nmfs-ocio/react-radfish:dispatchToast (breaking change — requires major version bump)
       document.removeEventListener("@nmfs-radfish/react-radfish:dispatchToast", handleToast);
     };
   }, []);

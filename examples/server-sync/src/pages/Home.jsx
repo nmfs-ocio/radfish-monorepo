@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Alert, Link } from "@trussworks/react-uswds";
-import { Spinner, Table, useOfflineStatus, useApplication } from "@nmfs-radfish/react-radfish";
+import { Spinner, Table, useOfflineStatus, useApplication } from "@nmfs-ocio/react-radfish";
 import { MSW_ENDPOINT } from "../mocks/handlers";
 
 // Constants for status messages

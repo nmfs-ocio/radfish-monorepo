@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { StorageModelFactory } from "@nmfs-radfish/radfish";
+import { StorageModelFactory } from "@nmfs-ocio/radfish";
 import { useApplication } from "../Application";
 
 export const OfflineStorageContext = createContext();
