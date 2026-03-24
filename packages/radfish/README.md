@@ -1,6 +1,6 @@
 # radfish
 
-![NPM Version](https://img.shields.io/npm/v/%40nmfs-radfish%2Fradfish)
+![Version](https://img.shields.io/github/package-json/v/nmfs-ocio/radfish-monorepo?filename=packages/radfish/package.json)
 
 The radfish NPM package contains the core Javascript modules needed to power any RADFish project. The idea is that these modules are framework agnostic, and should be fully functional whether you are building an application in React, Svelte, or even Vanilla JavaScript.
 
@@ -9,7 +9,7 @@ The radfish NPM package contains the core Javascript modules needed to power any
 Install Radfish with npm:
 
 ```bash
-npm install @nmfs-radfish/radfish
+npm install @nmfs-ocio/radfish
 ```
 
 This library is open source and can be found here:  https://www.npmjs.com/package/@nmfs-radfish/radfish
@@ -47,4 +47,3 @@ app.on("ready", () => {
 
 ## Contributing
 Contributions are welcome! If you would like to contribute, please read our [contributing guide](https://nmfs-radfish.github.io/radfish/about/contribute) and follow the steps.
-
