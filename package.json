@@ -1,6 +1,6 @@
 {
   "name": "boilerplate",
-  "description": "![test and build workflow](https://github.com/NMFS-RADFish/boilerplate/actions/workflows/run-tests.yml/badge.svg)",
+  "description": "![test and build workflow](https://github.com/nmfs-ocio/radfish-monorepo/actions/workflows/run-tests.yml/badge.svg)",
   "workspaces": [
     "packages/radfish",
     "packages/react-radfish"

@@ -192,7 +192,7 @@ function InfoAnnotation() {
         <Button type="button">Go To Documentation</Button>
       </Link>
       <Link
-        href="https://github.com/NMFS-RADFish/boilerplate/blob/main/examples/simple-table/README.md"
+        href="https://github.com/nmfs-ocio/radfish-monorepo/blob/main/examples/simple-table/README.md"
         target="_blank"
         rel="noopener noreferrer"
       >

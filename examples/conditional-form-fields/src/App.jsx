@@ -34,7 +34,7 @@ const FormInfoAnnotation = () => {
       Note, that this does not check if the name is valid or not (only that it exists). For form
       field validators, please see the{" "}
       <Link
-        href="https://github.com/NMFS-RADFish/boilerplate/tree/main/examples/field-validators"
+        href="https://github.com/nmfs-ocio/radfish-monorepo/tree/main/examples/field-validators"
         target="_blank"
         rel="noopener noreferrer"
       >

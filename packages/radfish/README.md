@@ -12,14 +12,14 @@ Install Radfish with npm:
 npm install @nmfs-ocio/radfish
 ```
 
-This library is open source and can be found here:  https://www.npmjs.com/package/@nmfs-radfish/radfish
+This library is open source and can be found here: https://github.com/orgs/nmfs-ocio/packages
 
 ## Usage
 
 ```jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Application } from "@nmfs-radfish/radfish";
+import { Application } from "@nmfs-ocio/radfish";
 
 // Initialize the application
 const app = new Application({
