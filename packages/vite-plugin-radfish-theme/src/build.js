@@ -50,9 +50,9 @@ export function closeBundle(ctx) {
   }
 
   const manifest = {
-    short_name: config.app.shortName,
-    name: config.app.name,
-    description: config.app.description,
+    short_name: config.shortName,
+    name: config.name,
+    description: config.description,
     icons: getManifestIcons(),
     start_url: ".",
     display: "standalone",

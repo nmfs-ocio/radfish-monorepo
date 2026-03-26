@@ -9,8 +9,8 @@
  * - Writes manifest.json after build via closeBundle
  *
  * Usage:
- *   radFishThemePlugin("noaa-theme")                    // Use noaa-theme from themes/noaa-theme/
- *   radFishThemePlugin("noaa-theme", { app: {...} })    // With config overrides (non-color)
+ *   radFishThemePlugin()                                              // Use default NOAA theme
+ *   radFishThemePlugin({ theme: "noaa-theme", name: "My App" })      // With options
  *
  * Theme Structure:
  *   themes/<theme-name>/
@@ -30,10 +30,31 @@ import { closeBundle } from "./build.js";
 
 /**
  * Main Vite plugin for RADFish theming
- * @param {string} themeName - Name of the theme folder in themes/ directory
- * @param {Object} configOverrides - Optional config overrides (colors, app name, etc.)
+ * @param {Object} options - Plugin options (theme, name, shortName, description, etc.)
  */
-export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {}) {
+export function radFishThemePlugin(options = {}) {
+  // Merge user options with defaults
+  const mergedConfig = deepMerge(getDefaultConfig(), options);
+  const themeName = mergedConfig.theme;
+
+  // Internal defaults — derived from theme directory at build time
+  mergedConfig.icons = {
+    logo: "/icons/logo.png",
+    favicon: "/icons/favicon.ico",
+    appleTouchIcon: "/icons/icon-512.png",
+  };
+  mergedConfig.colors = {
+    primary: "#0054a4",
+    secondary: "#0093d0",
+  };
+  mergedConfig.pwa = {
+    themeColor: "#0054a4",
+    backgroundColor: "#ffffff",
+  };
+  mergedConfig.typography = {
+    fontFamily: "Arial Narrow, sans-serif",
+  };
+
   // Shared context object passed between modules
   const ctx = {
     config: null,
@@ -50,8 +71,8 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
       // Determine root directory
       const root = viteConfig.root || process.cwd();
 
-      // Start with defaults, then merge provided overrides
-      ctx.config = deepMerge(getDefaultConfig(), configOverrides);
+      // Use the pre-merged config
+      ctx.config = mergedConfig;
 
       // Set theme directory based on theme name
       const themeDirPath = path.resolve(root, "themes", themeName);
@@ -133,12 +154,12 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
       //   <span style={{ color: import.meta.env.RADFISH_PRIMARY_COLOR }}>...</span>
       return {
         define: {
-          "import.meta.env.RADFISH_APP_NAME": JSON.stringify(ctx.config.app.name),
+          "import.meta.env.RADFISH_APP_NAME": JSON.stringify(ctx.config.name),
           "import.meta.env.RADFISH_SHORT_NAME": JSON.stringify(
-            ctx.config.app.shortName,
+            ctx.config.shortName,
           ),
           "import.meta.env.RADFISH_DESCRIPTION": JSON.stringify(
-            ctx.config.app.description,
+            ctx.config.description,
           ),
           "import.meta.env.RADFISH_LOGO": JSON.stringify(ctx.config.icons.logo),
           "import.meta.env.RADFISH_FAVICON": JSON.stringify(
@@ -204,7 +225,7 @@ ${colorVariables}
         .replace("</head>", `${cssImports}\n${cssVariables}\n  </head>`)
         .replace(
           /<title>.*?<\/title>/,
-          `<title>${ctx.config.app.shortName}</title>`,
+          `<title>${ctx.config.shortName}</title>`,
         )
         .replace(
           /<meta name="theme-color" content=".*?" \/>/,
@@ -212,7 +233,7 @@ ${colorVariables}
         )
         .replace(
           /<meta name="description" content=".*?" \/>/,
-          `<meta name="description" content="${ctx.config.app.description}" />`,
+          `<meta name="description" content="${ctx.config.description}" />`,
         )
         .replace(
           /<link rel="icon" type="image\/x-icon" href=".*?" \/>/,

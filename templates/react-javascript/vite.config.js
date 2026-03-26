@@ -16,22 +16,12 @@ import { radFishThemePlugin } from "@nmfs-radfish/vite-plugin-radfish-theme";
  *   - Generates manifest.json (dev + build)
  *
  * Usage:
- *   radFishThemePlugin("noaa-theme")                 // Use default NOAA theme
- *   radFishThemePlugin("noaa-theme", { app: {...} }) // With app config overrides
+ *   radFishThemePlugin()                                              // Use default NOAA theme
+ *   radFishThemePlugin({ theme: "noaa-theme", name: "My App" })      // With options
  *
  * Available themes (in themes/ folder):
  *   - noaa-theme: Default NOAA branding with USWDS colors
  */
-
-// Define config overrides here (app name, description)
-// NOTE: Colors automatically come from themes/<theme-name>/styles/theme.scss (Section 1)
-const configOverrides = {
-  app: {
-    name: "RADFISH Boilerplate",
-    shortName: "RADFISH Boilerplate",
-    description: "Offline-first fisheries data collection built with RADFish",
-  },
-};
 
 export default defineConfig({
   base: "/",
@@ -50,7 +40,12 @@ export default defineConfig({
     // - import.meta.env.RADFISH_* constants
     // - CSS variable injection
     // - manifest.json generation on build
-    radFishThemePlugin("noaa-theme", configOverrides),
+    radFishThemePlugin({
+      theme: "noaa-theme",
+      name: "RADFish Boilerplate",
+      shortName: "RADFish Boilerplate",
+      description: "Offline-first fisheries data collection built with RADFish",
+    }),
     react(),
     // VitePWA for service worker
     VitePWA({

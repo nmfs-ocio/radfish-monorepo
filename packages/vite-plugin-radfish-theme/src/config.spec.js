@@ -4,30 +4,26 @@ import { getDefaultConfig, deepMerge } from "./config.js";
 describe("getDefaultConfig", () => {
   it("returns an object with expected top-level keys", () => {
     const config = getDefaultConfig();
-    expect(config).toHaveProperty("app");
-    expect(config).toHaveProperty("icons");
-    expect(config).toHaveProperty("colors");
-    expect(config).toHaveProperty("pwa");
-    expect(config).toHaveProperty("typography");
+    expect(config).toHaveProperty("theme");
+    expect(config).toHaveProperty("name");
+    expect(config).toHaveProperty("shortName");
+    expect(config).toHaveProperty("description");
   });
 
-  it("returns default app values", () => {
+  it("does not include internal keys (icons, colors, pwa, typography)", () => {
     const config = getDefaultConfig();
-    expect(config.app.name).toBe("RADFish Application");
-    expect(config.app.shortName).toBe("RADFish");
-    expect(config.app.description).toBe("RADFish React App");
+    expect(config).not.toHaveProperty("icons");
+    expect(config).not.toHaveProperty("colors");
+    expect(config).not.toHaveProperty("pwa");
+    expect(config).not.toHaveProperty("typography");
   });
 
-  it("returns default color values", () => {
+  it("returns default values", () => {
     const config = getDefaultConfig();
-    expect(config.colors.primary).toBe("#0054a4");
-    expect(config.colors.secondary).toBe("#0093d0");
-  });
-
-  it("returns default pwa values", () => {
-    const config = getDefaultConfig();
-    expect(config.pwa.themeColor).toBe("#0054a4");
-    expect(config.pwa.backgroundColor).toBe("#ffffff");
+    expect(config.theme).toBe("noaa-theme");
+    expect(config.name).toBe("RADFish Application");
+    expect(config.shortName).toBe("RADFish");
+    expect(config.description).toBe("RADFish React App");
   });
 
   it("returns a new object on each call", () => {
