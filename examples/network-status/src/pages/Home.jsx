@@ -1,6 +1,6 @@
 import React from "react";
 import { Alert, Button, Link } from "@trussworks/react-uswds";
-import { useOfflineStatus } from "@nmfs-radfish/react-radfish";
+import { useOfflineStatus } from "@nmfs-ocio/react-radfish";
 
 const HomePage = () => {
   const { isOffline } = useOfflineStatus();

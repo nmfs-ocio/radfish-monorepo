@@ -2,9 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/theme.css";
 import App from "./App";
-import { Application } from "@nmfs-radfish/radfish";
-import { IndexedDBConnector } from "@nmfs-radfish/radfish/storage";
-import { ErrorBoundary } from "@nmfs-radfish/react-radfish";
+import { Application } from "@nmfs-ocio/radfish";
+import { IndexedDBConnector } from "@nmfs-ocio/radfish/storage";
+import { ErrorBoundary } from "@nmfs-ocio/react-radfish";
 
 async function enableMocking() {
   const { worker } = await import("./mocks/browser");
