@@ -1,5 +1,5 @@
 {
-  "name": "@nmfs-radfish/vite-plugin-radfish-theme",
+  "name": "@nmfs-ocio/vite-plugin-radfish-theme",
   "version": "0.1.0-rc.0",
   "type": "module",
   "exports": {
@@ -14,8 +14,7 @@
   "license": "ISC",
   "description": "",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
     "sass": "^1.97.2"

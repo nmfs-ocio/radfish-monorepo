@@ -1,4 +1,4 @@
-name: Publish @nmfs-radfish/vite-plugin-radfish-theme to NPM
+name: Publish @nmfs-ocio/vite-plugin-radfish-theme to GitHub Packages
 
 on:
   workflow_dispatch:
@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   publish:
@@ -38,25 +39,34 @@ jobs:
               core.setFailed(`User ${context.actor} does not have admin permissions. Current permission: ${permission}`);
             }
 
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "Radfish-Release-Bot[bot]"
+          git config --global user.email "Radfish-Release-Bot[bot]@users.noreply.github.com"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run tests
         run: |
@@ -75,7 +85,7 @@ jobs:
           echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
         working-directory: packages/vite-plugin-radfish-theme
 
-      - name: Publish to NPM
+      - name: Publish to GitHub Packages
         id: npm-publish
         run: |
           set -e
@@ -86,14 +96,14 @@ jobs:
           fi
         working-directory: packages/vite-plugin-radfish-theme
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit version bump
         if: success()
         run: |
           set -e
           git add packages/vite-plugin-radfish-theme/package.json
-          git commit -m "chore(release): bump @nmfs-radfish/vite-plugin-radfish-theme to ${{ steps.bump-version.outputs.new_version }}"
+          git commit -m "chore(release): bump @nmfs-ocio/vite-plugin-radfish-theme to ${{ steps.bump-version.outputs.new_version }}"
 
       - name: Create and push tags
         if: success()
@@ -115,12 +125,12 @@ jobs:
         if: success()
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
           tag_name: "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}"
           release_name: "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}"
           body: |
-            Release of @nmfs-radfish/vite-plugin-radfish-theme version ${{ steps.bump-version.outputs.new_version }}
+            Release of @nmfs-ocio/vite-plugin-radfish-theme version ${{ steps.bump-version.outputs.new_version }}
 
             ## Changes
             See [commit history](https://github.com/${{ github.repository }}/commits/vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}) for detailed changes.
