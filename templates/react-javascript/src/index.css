@@ -1,6 +1,13 @@
-/* trussworks component styles */
-@import "@trussworks/react-uswds/lib/uswds.css";
-@import "@trussworks/react-uswds/lib/index.css";
+/* Main CSS Entry Point */
+/*
+ * Theme CSS imports (USWDS, theme-components, theme-overrides) are
+ * automatically injected by the RADFish Vite plugin into index.html.
+ *
+ * This file is for developer-specific styles only.
+ */
+
+/* Developer's page-level custom styles */
+@import "./styles/style.css";
 
 /* normalize css */
 body {
@@ -19,6 +26,30 @@ code {
 html,
 body {
   width: 100%;
+}
+
+.header-logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  margin-top: 10px;
+  max-width: 210px;
+  width: 100%;
+}
+
+.usa-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+@media (max-width: 63.99em) {
+  .header-logo {
+    max-width: 110px;
+  }
 }
 
 @media (min-width: 64em) {

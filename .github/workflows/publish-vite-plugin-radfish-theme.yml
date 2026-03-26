@@ -1,0 +1,146 @@
+name: Publish @nmfs-ocio/vite-plugin-radfish-theme to GitHub Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch           # 1.0.0 → 1.0.1
+          - minor           # 1.0.0 → 1.1.0
+          - major           # 1.0.0 → 2.0.0
+          - prerelease      # 1.0.0-rc.1 → 1.0.0-rc.2
+          - prepatch        # 1.0.0 → 1.0.1-rc.1
+          - preminor        # 1.0.0 → 1.1.0-rc.1
+          - premajor        # 1.0.0 → 2.0.0-rc.1
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check admin permissions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: { permission } } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.actor
+            });
+
+            if (permission !== 'admin') {
+              core.setFailed(`User ${context.actor} does not have admin permissions. Current permission: ${permission}`);
+            }
+
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "Radfish-Release-Bot[bot]"
+          git config --global user.email "Radfish-Release-Bot[bot]@users.noreply.github.com"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests
+        run: |
+          set -e
+          npm test -- --run
+        working-directory: packages/vite-plugin-radfish-theme
+
+      - name: Bump version (no git operations)
+        id: bump-version
+        run: |
+          set -e
+          # Bump version (ignore output)
+          npm version ${{ inputs.version_type }} --preid=rc --no-git-tag-version --legacy-peer-deps
+          # Query the updated package.json for clean version
+          NEW_VERSION=$(jq -r '.version' package.json)
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+        working-directory: packages/vite-plugin-radfish-theme
+
+      - name: Publish to GitHub Packages
+        id: npm-publish
+        run: |
+          set -e
+          if [[ "${{ steps.bump-version.outputs.new_version }}" == *"-rc."* ]]; then
+            npm publish --tag beta
+          else
+            npm publish
+          fi
+        working-directory: packages/vite-plugin-radfish-theme
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit version bump
+        if: success()
+        run: |
+          set -e
+          git add packages/vite-plugin-radfish-theme/package.json
+          git commit -m "chore(release): bump @nmfs-ocio/vite-plugin-radfish-theme to ${{ steps.bump-version.outputs.new_version }}"
+
+      - name: Create and push tags
+        if: success()
+        run: |
+          set -e
+          git tag "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}"
+          git push origin HEAD
+          if [[ "${{ steps.bump-version.outputs.new_version }}" == *"-rc."* ]]; then
+            # For prereleases, only tag and push beta
+            git tag -f "vite-plugin-radfish-theme@beta"
+            git push origin "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}" "vite-plugin-radfish-theme@beta" --force
+          else
+            # For regular releases, only tag and push latest
+            git tag -f "vite-plugin-radfish-theme@latest"
+            git push origin "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}" "vite-plugin-radfish-theme@latest" --force
+          fi
+
+      - name: Create GitHub Release
+        if: success()
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        with:
+          tag_name: "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}"
+          release_name: "vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}"
+          body: |
+            Release of @nmfs-ocio/vite-plugin-radfish-theme version ${{ steps.bump-version.outputs.new_version }}
+
+            ## Changes
+            See [commit history](https://github.com/${{ github.repository }}/commits/vite-plugin-radfish-theme@${{ steps.bump-version.outputs.new_version }}) for detailed changes.
+          draft: false
+          prerelease: ${{ contains(steps.bump-version.outputs.new_version, '-rc.') }}
+
+      - name: Rollback version on failure
+        if: failure() && steps.bump-version.conclusion == 'success'
+        run: |
+          set -e
+          git checkout -- packages/vite-plugin-radfish-theme/package.json
+          echo "Version bump rolled back due to publish failure"
+        working-directory: .

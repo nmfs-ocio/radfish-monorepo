@@ -1,0 +1,37 @@
+/**
+ * Developer Page-Level Custom Styles
+ *
+ * Add your application-specific page and layout styles here.
+ * This file is for styling YOUR OWN pages/layouts, NOT theme config or component overrides.
+ *
+ * For different types of customization:
+ *   - USWDS theme colors → themes/<theme>/styles/theme.scss (Section 1)
+ *   - RADFish components → themes/<theme>/styles/theme.scss (Section 2)
+ *   - react-uswds overrides → themes/<theme>/styles/theme.scss (Section 3)
+ *   - Page/layout styles → THIS FILE
+ *
+ * Examples:
+ */
+
+/* Page-specific layouts
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+*/
+
+/* Custom application components
+.fish-data-card {
+  background: var(--radfish-background);
+  border: 1px solid var(--radfish-border-light);
+  padding: 1.5rem;
+}
+
+.catch-summary-badge {
+  background-color: var(--radfish-primary);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+}
+*/

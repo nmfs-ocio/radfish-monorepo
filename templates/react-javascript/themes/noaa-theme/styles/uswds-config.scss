@@ -1,0 +1,108 @@
+/**
+ * USWDS Configuration for NOAA Theme
+ *
+ * This file contains ONLY USWDS token variable overrides.
+ * Variables use USWDS naming convention: $theme-color-<name>
+ *
+ * USWDS will apply these tokens when compiling the design system.
+ * See: https://designsystem.digital.gov/design-tokens/
+ *
+ * NOAA Palette → USWDS Token Mapping:
+ *   NOAA Dark Blue (Reflex Blue #0055A4)   → theme-color-primary
+ *   NOAA Light Blue (Process Blue #0093D0) → theme-color-secondary
+ *   URCHIN (Purples)                       → theme-color-accent-cool
+ *   CRUSTACEAN (Orange)                    → theme-color-accent-warm
+ *   SEAGRASS (Greens)                      → theme-color-success
+ *   CORAL (Reds)                           → theme-color-error
+ *   Neutrals                               → theme-color-base
+ */
+
+// =============================================================================
+// BASE COLORS - NOAA Neutrals
+// =============================================================================
+$theme-color-base-lightest: #ffffff;
+$theme-color-base-lighter: #e8e8e8;
+$theme-color-base-light: #d0d0d0;
+$theme-color-base: #71767a; // USWDS gray-50 (better contrast)
+$theme-color-base-dark: #7b7b7b;
+$theme-color-base-darker: #4a4a4a; // Darkened for AA contrast with base-lighter links
+$theme-color-base-darkest: #333333;
+
+// =============================================================================
+// PRIMARY - NOAA Dark Blue (Reflex Blue)
+// Main brand color from NOAA Fisheries Primary Palette
+// =============================================================================
+$theme-color-primary-lighter: #b2def1; // 15% tint
+$theme-color-primary-light: #59b9e0; // 30% tint
+$theme-color-primary: #0055a4; // Reflex Blue - NOAA Dark Blue (main brand)
+$theme-color-primary-vivid: #0055a4; // Reflex Blue
+$theme-color-primary-dark: #00467f; // Navy Blue (Pantone 541)
+$theme-color-primary-darker: #002d4d; // Darker Navy
+
+// =============================================================================
+// SECONDARY - NOAA Light Blue (Process Blue)
+// From NOAA Fisheries Primary Palette
+// =============================================================================
+$theme-color-secondary-lighter: #d9eff8; // 15% tint
+$theme-color-secondary-light: #59b9e0; // 30% tint
+$theme-color-secondary: #007eb5; // Darkened Process Blue for AA contrast
+$theme-color-secondary-vivid: #0093d0; // Process Blue (original)
+$theme-color-secondary-dark: #006a99; // Darker for AA contrast with white text
+$theme-color-secondary-darker: #00557a; // Darkest Process Blue
+
+// =============================================================================
+// ACCENT-COOL - URCHIN (Purples)
+// =============================================================================
+$theme-color-accent-cool-lighter: #c9c9ff; // Light tint
+$theme-color-accent-cool-light: #9f9fff; // Mid tint
+$theme-color-accent-cool: #5a5ae6; // Darkened for AA contrast with white text
+$theme-color-accent-cool-dark: #625bc4; // PMS 2725
+$theme-color-accent-cool-darker: #575195; // PMS 7670
+
+// =============================================================================
+// ACCENT-WARM - CRUSTACEAN (Oranges)
+// =============================================================================
+$theme-color-accent-warm-lighter: #ffd9b3; // Light tint
+$theme-color-accent-warm-light: #ffb366; // Mid tint
+$theme-color-accent-warm: #ff8300; // PMS 151
+$theme-color-accent-warm-dark: #b54d00; // Darkened for AA contrast with white text
+$theme-color-accent-warm-darker: #bc4700; // PMS 1525
+
+// =============================================================================
+// STATE COLORS
+// =============================================================================
+
+// INFO - WAVES (Teal)
+$theme-color-info-lighter: #e0f7f8;
+$theme-color-info-light: #5de0e6;
+$theme-color-info: #1ecad3; // PMS 319
+$theme-color-info-dark: #008998; // PMS 321
+$theme-color-info-darker: #007078; // PMS 322
+
+// ERROR - CORAL (Red)
+$theme-color-error-lighter: #ffe5e4;
+$theme-color-error-light: #ff7a73;
+$theme-color-error: #d02c2f; // PMS 711
+$theme-color-error-dark: #b2292e; // PMS 1805
+$theme-color-error-darker: #8b1f24;
+
+// WARNING - CRUSTACEAN (Orange)
+$theme-color-warning-lighter: #fff3e0;
+$theme-color-warning-light: #ffd9b3;
+$theme-color-warning: #ff8300; // PMS 151
+$theme-color-warning-dark: #d65f00; // PMS 717
+$theme-color-warning-darker: #bc4700; // PMS 1525
+
+// SUCCESS - SEAGRASS (Greens)
+$theme-color-success-lighter: #e8f5d6; // Light tint
+$theme-color-success-light: #b8e67d; // Mid tint
+$theme-color-success: #93d500; // PMS 375
+$theme-color-success-dark: #4c9c2e; // PMS 362
+$theme-color-success-darker: #007934; // PMS 356
+
+// =============================================================================
+// DISABLED STATE
+// =============================================================================
+$theme-color-disabled-light: #e8e8e8;
+$theme-color-disabled: #d0d0d0;
+$theme-color-disabled-dark: #9a9a9a;

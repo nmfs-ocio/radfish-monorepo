@@ -1,0 +1,142 @@
+/**
+ * NOAA Fisheries Brand Theme - Component Overrides & Custom Properties
+ *
+ * USWDS TOKEN CONFIGURATION:
+ *   → See uswds-config.scss for all USWDS token variable definitions
+ *   → That file is automatically loaded by the RADFish plugin for USWDS compilation
+ *
+ * THIS FILE (theme.scss) contains:
+ *   1. CSS Custom Properties (:root) - NOAA-specific variables
+ *   2. Component Overrides - custom styles for USWDS/RADFish components
+ *
+ * You can now freely use SCSS variables here without worrying about
+ * accidental extraction as USWDS tokens!
+ */
+
+// =============================================================================
+// SECTION 1: CSS CUSTOM PROPERTIES
+// These extend the USWDS theme tokens for NOAA-specific needs.
+// Available throughout your application via var(--noaa-*).
+// =============================================================================
+
+:root {
+  // ---------------------------------------------------------------------------
+  // NOAA PRIMARY BRAND COLORS (Direct Access)
+  // For cases where you need exact brand colors
+  // ---------------------------------------------------------------------------
+  --noaa-process-blue: #0093D0;      // NOAA Light Blue
+  --noaa-reflex-blue: #0055A4;       // NOAA Dark Blue
+  --noaa-navy-blue: #00467F;         // PMS 541
+
+  // ---------------------------------------------------------------------------
+  // REGIONAL WEB COLORS
+  // For region-specific styling, badges, and indicators
+  // ---------------------------------------------------------------------------
+  --noaa-region-national: #0055A4;        // Blue (Reflex Blue)
+  --noaa-region-west-coast: #4C9C2E;      // Green (PMS 362)
+  --noaa-region-southeast: #B2292E;       // Red (PMS 1805)
+  --noaa-region-alaska: #FF8300;          // Orange (PMS 151)
+  --noaa-region-pacific-islands: #625BC4; // Purple (PMS 2725)
+  --noaa-region-mid-atlantic: #625BC4;    // Purple (PMS 2725)
+
+  // ---------------------------------------------------------------------------
+  // THEME PALETTE QUICK ACCESS
+  // All six NOAA theme palettes for easy reference
+  // ---------------------------------------------------------------------------
+
+  // OCEANS (mapped to primary-*)
+  --noaa-oceans-light: #0093D0;
+  --noaa-oceans: #0055A4;
+  --noaa-oceans-dark: #00467F;
+
+  // WAVES (mapped to accent-cool-*)
+  --noaa-waves-light: #1ECAD3;
+  --noaa-waves: #008998;
+  --noaa-waves-dark: #007078;
+
+  // SEAGRASS (mapped to success-*)
+  --noaa-seagrass-light: #93D500;
+  --noaa-seagrass: #4C9C2E;
+  --noaa-seagrass-dark: #007934;
+
+  // CRUSTACEAN (mapped to accent-warm-*)
+  --noaa-crustacean-light: #FF8300;
+  --noaa-crustacean: #D65F00;
+  --noaa-crustacean-dark: #BC4700;
+
+  // CORAL (mapped to secondary-*)
+  --noaa-coral-light: #FF4438;
+  --noaa-coral: #D02C2F;
+  --noaa-coral-dark: #B2292E;
+}
+
+
+// =============================================================================
+// SECTION 2: COMPONENT OVERRIDES
+// Customize RADFish and USWDS components here.
+//
+// Available CSS variables (injected by RADFish plugin):
+//   var(--radfish-color-primary)         - Primary brand color
+//   var(--radfish-color-primary-dark)    - Darker primary
+//   var(--radfish-color-secondary)       - Secondary color
+//   var(--radfish-color-secondary-dark)  - Darker secondary
+//   var(--radfish-color-accent-cool)     - Cool accent (teal)
+//   var(--radfish-color-accent-warm)     - Warm accent (orange)
+//   var(--radfish-color-base-lightest)   - Lightest gray
+//   var(--radfish-color-error)           - Error red
+//   var(--radfish-color-success)         - Success green
+//   var(--radfish-color-warning)         - Warning orange
+//
+// Available react-uswds components to override:
+//   Layout & Navigation: usa-header, usa-footer, usa-sidenav, usa-breadcrumb
+//   Forms & Inputs: usa-button, usa-input, usa-checkbox, usa-radio, usa-select
+//   Content & Display: usa-card, usa-alert, usa-table, usa-list, usa-accordion
+//   Interactive: usa-modal, usa-tooltip, usa-pagination, usa-language-selector
+//
+// See: https://designsystem.digital.gov/components/overview/
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// HEADER
+// -----------------------------------------------------------------------------
+
+/* Header Background */
+header.usa-header {
+  // background-color: var(--radfish-color-primary);
+}
+
+/* Header Logo Width - Minimum 72px for agency logos */
+
+// -----------------------------------------------------------------------------
+// EXAMPLE OVERRIDES (uncomment to use)
+// -----------------------------------------------------------------------------
+
+/* Example: Regional badge styling */
+/*
+.region-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+}
+
+.region-badge--national { background-color: var(--noaa-region-national); }
+.region-badge--west-coast { background-color: var(--noaa-region-west-coast); }
+.region-badge--southeast { background-color: var(--noaa-region-southeast); }
+.region-badge--alaska { background-color: var(--noaa-region-alaska); }
+.region-badge--pacific-islands { background-color: var(--noaa-region-pacific-islands); }
+.region-badge--mid-atlantic { background-color: var(--noaa-region-mid-atlantic); }
+*/
+
+/* Example: Custom button styles */
+/* .usa-button {
+  border-radius: 8px;
+  font-weight: 600;
+} */
+
+/* Example: Custom card styles */
+/* .usa-card {
+  border-color: color("base-light");
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+} */
