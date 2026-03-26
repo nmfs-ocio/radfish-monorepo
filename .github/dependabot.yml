@@ -27,6 +27,29 @@ updates:
     schedule:
       interval: "weekly"
       day: "thursday"
+    groups:
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+      testing:
+        patterns:
+          - "vitest*"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "jsdom"
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router*"
+      linting:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+      workbox:
+        patterns:
+          - "workbox-*"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-major" , "version-update:semver-patch"]
+        update-types: ["version-update:semver-major"]
