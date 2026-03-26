@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { parseScssContent, isUswdsToken, formatUswdsValue, normalizeColorValue } from "./scss.js";
+import path from "path";
+import { parseScssContent, isUswdsToken, formatUswdsValue, normalizeColorValue, getValidUswdsSettings, validateUswdsConfig } from "./scss.js";
 
 describe("parseScssContent", () => {
   it("parses simple SCSS variable definitions", () => {
@@ -134,5 +135,114 @@ describe("formatUswdsValue", () => {
 
   it("leaves non-token non-hex values unquoted", () => {
     expect(formatUswdsValue("primary")).toBe("primary");
+  });
+});
+
+// Resolve the USWDS packages directory from the template's node_modules
+const uswdsPackagesDir = path.resolve(
+  import.meta.dirname,
+  "../../..",
+  "templates/react-javascript/node_modules/@uswds/uswds/packages",
+);
+
+describe("getValidUswdsSettings", () => {
+  it("returns a non-empty set of valid settings from the installed USWDS package", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings).toBeInstanceOf(Set);
+    expect(settings.size).toBeGreaterThan(0);
+  });
+
+  it("includes known color settings", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings.has("theme-color-primary")).toBe(true);
+    expect(settings.has("theme-color-secondary")).toBe(true);
+    expect(settings.has("theme-color-base")).toBe(true);
+    expect(settings.has("theme-color-error")).toBe(true);
+    expect(settings.has("theme-color-warning")).toBe(true);
+    expect(settings.has("theme-color-success")).toBe(true);
+    expect(settings.has("theme-color-info")).toBe(true);
+  });
+
+  it("includes known component settings", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings.has("theme-accordion-font-family")).toBe(true);
+    expect(settings.has("theme-button-border-radius")).toBe(true);
+    expect(settings.has("theme-header-font-family")).toBe(true);
+    expect(settings.has("theme-table-border-color")).toBe(true);
+  });
+
+  it("includes known typography settings", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings.has("theme-font-type-sans")).toBe(true);
+    expect(settings.has("theme-body-font-family")).toBe(true);
+    expect(settings.has("theme-respect-user-font-size")).toBe(true);
+  });
+
+  it("includes known spacing settings", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings.has("theme-grid-container-max-width")).toBe(true);
+    expect(settings.has("theme-site-margins-width")).toBe(true);
+    expect(settings.has("theme-border-radius-md")).toBe(true);
+  });
+
+  it("includes known general settings", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings.has("theme-show-notifications")).toBe(true);
+    expect(settings.has("theme-image-path")).toBe(true);
+    expect(settings.has("theme-focus-color")).toBe(true);
+  });
+
+  it("does not include arbitrary names", () => {
+    const settings = getValidUswdsSettings(uswdsPackagesDir);
+    expect(settings.has("theme-fake-setting")).toBe(false);
+    expect(settings.has("not-a-real-variable")).toBe(false);
+  });
+
+  it("returns empty set when given a non-existent path", () => {
+    const settings = getValidUswdsSettings("/non/existent/path");
+    expect(settings.size).toBe(0);
+  });
+});
+
+describe("validateUswdsConfig", () => {
+  it("passes for valid USWDS config variables", () => {
+    const tokens = parseScssContent(`
+$theme-color-primary: #0055a4;
+$theme-color-secondary: #0093d0;
+$theme-color-base-lightest: #ffffff;
+`);
+    const result = validateUswdsConfig(tokens, uswdsPackagesDir);
+    expect(result.valid).toBe(true);
+    expect(result.invalidVariables).toEqual([]);
+  });
+
+  it("detects invalid variable names", () => {
+    const tokens = parseScssContent(`
+$theme-color-primary: #0055a4;
+$theme-fake-setting: red;
+$not-a-uswds-var: blue;
+`);
+    const result = validateUswdsConfig(tokens, uswdsPackagesDir);
+    expect(result.valid).toBe(false);
+    expect(result.invalidVariables).toContain("theme-fake-setting");
+    expect(result.invalidVariables).toContain("not-a-uswds-var");
+    expect(result.invalidVariables).not.toContain("theme-color-primary");
+  });
+
+  it("passes for component settings", () => {
+    const tokens = parseScssContent(`
+$theme-accordion-font-family: "sans";
+$theme-button-border-radius: "md";
+$theme-header-max-width: "desktop";
+`);
+    const result = validateUswdsConfig(tokens, uswdsPackagesDir);
+    expect(result.valid).toBe(true);
+    expect(result.invalidVariables).toEqual([]);
+  });
+
+  it("passes for an empty config", () => {
+    const result = validateUswdsConfig({}, uswdsPackagesDir);
+    expect(result.valid).toBe(true);
+    expect(result.invalidVariables).toEqual([]);
   });
 });

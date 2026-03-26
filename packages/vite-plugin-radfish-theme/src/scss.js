@@ -80,6 +80,65 @@ export function formatUswdsValue(value) {
 }
 
 /**
+ * Extract valid USWDS settings variable names from the installed @uswds/uswds package.
+ * Reads the _settings-*.scss files in uswds-core and collects all $theme-* variable declarations.
+ *
+ * @param {string} [uswdsPackagesDir] - Path to @uswds/uswds/packages. Defaults to node_modules resolution.
+ * @returns {Set<string>} Set of valid variable names in kebab-case (without $ prefix)
+ */
+export function getValidUswdsSettings(uswdsPackagesDir) {
+  if (!uswdsPackagesDir) {
+    uswdsPackagesDir = path.join(process.cwd(), "node_modules/@uswds/uswds/packages");
+  }
+
+  const settingsDir = path.join(uswdsPackagesDir, "uswds-core/src/styles/settings");
+  const validSettings = new Set();
+
+  if (!fs.existsSync(settingsDir)) {
+    return validSettings;
+  }
+
+  const settingsFiles = fs.readdirSync(settingsDir).filter((f) => f.endsWith(".scss"));
+
+  for (const file of settingsFiles) {
+    const content = fs.readFileSync(path.join(settingsDir, file), "utf-8");
+    const varRegex = /^\s*\$(theme-[\w-]+)\s*:/gm;
+    let match;
+    while ((match = varRegex.exec(content)) !== null) {
+      validSettings.add(match[1]);
+    }
+  }
+
+  return validSettings;
+}
+
+/**
+ * Validate that all variables in a parsed uswds-config.scss are valid USWDS settings.
+ * Variables are expected in camelCase (as returned by parseScssContent).
+ *
+ * @param {Object} parsedTokens - Object from parseScssContent (camelCase keys)
+ * @param {string} [uswdsPackagesDir] - Optional path to @uswds/uswds/packages
+ * @returns {{ valid: boolean, invalidVariables: string[] }}
+ */
+export function validateUswdsConfig(parsedTokens, uswdsPackagesDir) {
+  const validSettings = getValidUswdsSettings(uswdsPackagesDir);
+  const invalidVariables = [];
+
+  for (const camelKey of Object.keys(parsedTokens)) {
+    // Convert camelCase back to kebab-case for comparison
+    const kebabKey = camelKey.replace(/([A-Z])/g, "-$1").toLowerCase();
+    if (!validSettings.has(kebabKey)) {
+      invalidVariables.push(kebabKey);
+    }
+  }
+
+  return {
+    valid: invalidVariables.length === 0,
+    invalidVariables,
+  };
+}
+
+/**
  * Load theme tokens from uswds-config.scss (preferred) or theme.scss (legacy)
  * Returns: { uswdsTokens: {}, isUswdsConfig: boolean }
  *
