@@ -80,15 +80,27 @@ export function formatUswdsValue(value) {
 }
 
 /**
- * Load theme tokens from theme.scss
- * Returns: { uswdsTokens: {} }
+ * Load theme tokens from uswds-config.scss (preferred) or theme.scss (legacy)
+ * Returns: { uswdsTokens: {}, isUswdsConfig: boolean }
+ *
+ * File Priority:
+ * 1. uswds-config.scss (new approach) - USWDS variables are used as-is, no transformation
+ * 2. theme.scss (legacy) - Variables are auto-transformed to USWDS format for backward compatibility
  */
 export function loadThemeFiles(themeDir) {
+  const uswdsConfigFile = path.join(themeDir, "styles", "uswds-config.scss");
   const themeFile = path.join(themeDir, "styles", "theme.scss");
 
-  const uswdsTokens = fs.existsSync(themeFile)
-    ? parseScssVariables(themeFile)
-    : {};
+  let uswdsTokens = {};
+  let isUswdsConfig = false;
 
-  return { uswdsTokens };
+  if (fs.existsSync(uswdsConfigFile)) {
+    uswdsTokens = parseScssVariables(uswdsConfigFile);
+    isUswdsConfig = true;
+  } else if (fs.existsSync(themeFile)) {
+    uswdsTokens = parseScssVariables(themeFile);
+    isUswdsConfig = false;
+  }
+
+  return { uswdsTokens, isUswdsConfig };
 }
