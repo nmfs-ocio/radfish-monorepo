@@ -138,12 +138,13 @@ describe("formatUswdsValue", () => {
   });
 });
 
-// Resolve the USWDS packages directory from the template's node_modules
-const uswdsPackagesDir = path.resolve(
-  import.meta.dirname,
-  "../../..",
-  "templates/react-javascript/node_modules/@uswds/uswds/packages",
-);
+// Resolve the USWDS packages directory using Node module resolution.
+// require.resolve returns the dist entry point, so walk up to the package root.
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const uswdsEntry = require.resolve("@uswds/uswds");
+const uswdsRoot = uswdsEntry.substring(0, uswdsEntry.indexOf("@uswds/uswds/") + "@uswds/uswds/".length);
+const uswdsPackagesDir = path.join(uswdsRoot, "packages");
 
 describe("getValidUswdsSettings", () => {
   it("returns a non-empty set of valid settings from the installed USWDS package", () => {
