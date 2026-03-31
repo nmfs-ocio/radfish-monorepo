@@ -1,0 +1,29 @@
+{
+  "name": "@nmfs-ocio/vite-plugin-radfish-theme",
+  "version": "0.1.0-rc.1",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "sass": "^1.97.2"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0"
+  },
+  "devDependencies": {
+    "@uswds/uswds": "^3.13.0",
+    "vitest": "^1.6.0"
+  }
+}
