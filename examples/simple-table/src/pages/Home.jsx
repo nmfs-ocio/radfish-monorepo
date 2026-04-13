@@ -1,6 +1,6 @@
 import React from "react";
 import { Alert, Button, Link } from "@trussworks/react-uswds";
-import { Table } from "@nmfs-radfish/react-radfish";
+import { Table } from "@nmfs-ocio/react-radfish";
 
 // mockData is used to populate the table with data, usually this would come from an API call.
 const mockData = [
@@ -192,7 +192,7 @@ function InfoAnnotation() {
         <Button type="button">Go To Documentation</Button>
       </Link>
       <Link
-        href="https://github.com/NMFS-RADFish/boilerplate/blob/main/examples/simple-table/README.md"
+        href="https://github.com/nmfs-ocio/radfish-monorepo/blob/main/examples/simple-table/README.md"
         target="_blank"
         rel="noopener noreferrer"
       >

@@ -15,9 +15,9 @@ export function configureServer(server, ctx) {
   // Serve manifest.json in dev mode
   server.middlewares.use("/manifest.json", (_req, res) => {
     const manifest = {
-      short_name: config.app.shortName,
-      name: config.app.name,
-      description: config.app.description,
+      short_name: config.shortName,
+      name: config.name,
+      description: config.description,
       icons: getManifestIcons(),
       start_url: ".",
       display: "standalone",
@@ -51,20 +51,28 @@ export function configureServer(server, ctx) {
     }
   });
 
-  // Watch theme SCSS file for changes and recompile
+  // Watch theme SCSS files for changes and recompile
+  const uswdsConfigPath = path.join(themeDir, "styles", "uswds-config.scss");
   const themePath = path.join(themeDir, "styles", "theme.scss");
+  const filesToWatch = [];
 
-  // Add theme file to watcher
+  // Add both files to watcher (whichever exist)
+  if (fs.existsSync(uswdsConfigPath)) {
+    server.watcher.add(uswdsConfigPath);
+    filesToWatch.push(uswdsConfigPath);
+  }
   if (fs.existsSync(themePath)) {
     server.watcher.add(themePath);
+    filesToWatch.push(themePath);
   }
 
   server.watcher.on("change", (changedPath) => {
-    if (changedPath === themePath) {
-      // Theme file changed - recompile everything and restart
-      console.log("[radfish-theme] theme.scss changed, recompiling...");
-      const { uswdsTokens } = loadThemeFiles(themeDir);
-      precompileUswds(themeDir, themeName, uswdsTokens);
+    if (filesToWatch.includes(changedPath)) {
+      // Theme file(s) changed - recompile everything and restart
+      const fileName = path.basename(changedPath);
+      console.log(`[radfish-theme] ${fileName} changed, recompiling...`);
+      const { uswdsTokens, isUswdsConfig } = loadThemeFiles(themeDir);
+      precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig);
       precompileThemeScss(themeDir, themeName);
       console.log("[radfish-theme] Restarting server...");
       server.restart();

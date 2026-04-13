@@ -37,7 +37,7 @@ body:
   #     label: "Code of Conduct Confirmation"
   #     description: "Please confirm the following:"
   #     options:
-  #       - label: "I have searched for duplicate issues in the [issue tracker](https://github.com/NMFS-RADFish/boilerplate/issues)."
+  #       - label: "I have searched for duplicate issues in the [issue tracker](https://github.com/nmfs-ocio/radfish-monorepo/issues)."
   #         required: true
         # - label: "I agree to follow this project's [Code of Conduct](https://example.com/code-of-conduct)."
         #   required: true

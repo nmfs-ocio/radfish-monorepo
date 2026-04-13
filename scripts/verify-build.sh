@@ -93,8 +93,8 @@ node -e "
 const fs = require('fs');
 const pkgPath = '$TEMPLATE_DIR/package.json';
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-pkg.dependencies['@nmfs-radfish/radfish'] = 'file:../../packages/radfish';
-pkg.dependencies['@nmfs-radfish/react-radfish'] = 'file:../../packages/react-radfish';
+pkg.dependencies['@nmfs-ocio/radfish'] = 'file:../../packages/radfish';
+pkg.dependencies['@nmfs-ocio/react-radfish'] = 'file:../../packages/react-radfish';
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 "
 log_success "Template updated with local package references"

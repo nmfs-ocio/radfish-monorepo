@@ -9,13 +9,14 @@
  * - Writes manifest.json after build via closeBundle
  *
  * Usage:
- *   radFishThemePlugin("noaa-theme")                    // Use noaa-theme from themes/noaa-theme/
- *   radFishThemePlugin("noaa-theme", { app: {...} })    // With config overrides (non-color)
+ *   radFishThemePlugin()                                              // Use default NOAA theme
+ *   radFishThemePlugin({ theme: "noaa-theme", name: "My App" })      // With options
  *
  * Theme Structure:
  *   themes/<theme-name>/
  *     assets/              - Theme icons (served in dev, copied on build)
- *     styles/theme.scss    - Combined file with USWDS tokens, CSS variables, and component overrides
+ *     styles/uswds-config.scss (new)  - USWDS token variable overrides (optional, replaces theme.scss extraction)
+ *     styles/theme.scss               - CSS variables and component overrides
  */
 
 import fs from "fs";
@@ -29,10 +30,31 @@ import { closeBundle } from "./build.js";
 
 /**
  * Main Vite plugin for RADFish theming
- * @param {string} themeName - Name of the theme folder in themes/ directory
- * @param {Object} configOverrides - Optional config overrides (colors, app name, etc.)
+ * @param {Object} options - Plugin options (theme, name, shortName, description, etc.)
  */
-export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {}) {
+export function radFishThemePlugin(options = {}) {
+  // Merge user options with defaults
+  const mergedConfig = deepMerge(getDefaultConfig(), options);
+  const themeName = mergedConfig.theme;
+
+  // Internal defaults — derived from theme directory at build time
+  mergedConfig.icons = {
+    logo: "/icons/logo.png",
+    favicon: "/icons/favicon.ico",
+    appleTouchIcon: "/icons/icon-512.png",
+  };
+  mergedConfig.colors = {
+    primary: "#0054a4",
+    secondary: "#0093d0",
+  };
+  mergedConfig.pwa = {
+    themeColor: "#0054a4",
+    backgroundColor: "#ffffff",
+  };
+  mergedConfig.typography = {
+    fontFamily: "Arial Narrow, sans-serif",
+  };
+
   // Shared context object passed between modules
   const ctx = {
     config: null,
@@ -49,8 +71,8 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
       // Determine root directory
       const root = viteConfig.root || process.cwd();
 
-      // Start with defaults, then merge provided overrides
-      ctx.config = deepMerge(getDefaultConfig(), configOverrides);
+      // Use the pre-merged config
+      ctx.config = mergedConfig;
 
       // Set theme directory based on theme name
       const themeDirPath = path.resolve(root, "themes", themeName);
@@ -58,22 +80,23 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
         ctx.themeDir = themeDirPath;
         console.log("[radfish-theme] Using theme:", themeName);
 
-        // Load theme tokens from theme.scss
-        const { uswdsTokens } = loadThemeFiles(themeDirPath);
+        // Load theme tokens from uswds-config.scss (new) or theme.scss (legacy)
+        const { uswdsTokens, isUswdsConfig } = loadThemeFiles(themeDirPath);
 
         if (Object.keys(uswdsTokens).length > 0) {
           // Merge USWDS tokens into config colors for CSS variable injection
           ctx.config.colors = deepMerge(ctx.config.colors, uswdsTokens);
 
           // Auto-map PWA manifest colors from theme tokens
-          // Manifest theme color defaults to primary color from theme.scss
-          // Manifest background defaults to base-lightest from theme.scss
+          // Manifest theme color defaults to primary color from USWDS tokens
+          // Manifest background defaults to base-lightest from USWDS tokens
 
           // Set manifest theme color (use primary token, fallback to default)
-          if (uswdsTokens.primary) {
-            // Primary is typically a token name like 'blue-60v' or hex like '#0054a4'
-            // For manifests we want hex, so if it looks like a token name, use our default
-            const primaryValue = normalizeColorValue(uswdsTokens.primary);
+          if (uswdsTokens.primary || uswdsTokens.themeColorPrimary) {
+            // Handle both legacy (primary) and new (themeColorPrimary) naming
+            const primaryValue = normalizeColorValue(
+              uswdsTokens.themeColorPrimary || uswdsTokens.primary
+            );
             if (primaryValue.match(/^#/)) {
               // It's already a hex color, use it directly
               ctx.config.pwa.themeColor = primaryValue;
@@ -85,10 +108,15 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
           }
 
           // Set manifest background color (use base-lightest token, fallback to white)
-          if (uswdsTokens.baseLight || uswdsTokens.baseLighter || uswdsTokens.baseLightest) {
-            // Try to find a light color, default to white
-            const bgValue = uswdsTokens.baseLightest || uswdsTokens.baseLighter || uswdsTokens.baseLight;
-            const normalizedBg = normalizeColorValue(bgValue);
+          const baseLight =
+            uswdsTokens.themeColorBaseLightest ||
+            uswdsTokens.themeColorBaseLighter ||
+            uswdsTokens.baseLightest ||
+            uswdsTokens.baseLighter ||
+            uswdsTokens.baseLight;
+
+          if (baseLight) {
+            const normalizedBg = normalizeColorValue(baseLight);
             if (normalizedBg.match(/^#/)) {
               ctx.config.pwa.backgroundColor = normalizedBg;
             } else {
@@ -98,11 +126,13 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
           }
 
           // Pre-compile USWDS to static CSS (with caching)
-          const tokensPath = path.join(themeDirPath, "styles", "theme.scss");
+          const uswdsConfigPath = path.join(themeDirPath, "styles", "uswds-config.scss");
+          const themeFilePath = path.join(themeDirPath, "styles", "theme.scss");
+          const tokensPath = isUswdsConfig ? uswdsConfigPath : themeFilePath;
           const cacheDir = getCacheDir(themeName);
 
           if (needsRecompilation(cacheDir, tokensPath)) {
-            precompileUswds(themeDirPath, themeName, uswdsTokens);
+            precompileUswds(themeDirPath, themeName, uswdsTokens, isUswdsConfig);
           } else {
             console.log("[radfish-theme] Using cached USWDS compilation");
           }
@@ -124,12 +154,12 @@ export function radFishThemePlugin(themeName = "noaa-theme", configOverrides = {
       //   <span style={{ color: import.meta.env.RADFISH_PRIMARY_COLOR }}>...</span>
       return {
         define: {
-          "import.meta.env.RADFISH_APP_NAME": JSON.stringify(ctx.config.app.name),
+          "import.meta.env.RADFISH_APP_NAME": JSON.stringify(ctx.config.name),
           "import.meta.env.RADFISH_SHORT_NAME": JSON.stringify(
-            ctx.config.app.shortName,
+            ctx.config.shortName,
           ),
           "import.meta.env.RADFISH_DESCRIPTION": JSON.stringify(
-            ctx.config.app.description,
+            ctx.config.description,
           ),
           "import.meta.env.RADFISH_LOGO": JSON.stringify(ctx.config.icons.logo),
           "import.meta.env.RADFISH_FAVICON": JSON.stringify(
@@ -195,7 +225,7 @@ ${colorVariables}
         .replace("</head>", `${cssImports}\n${cssVariables}\n  </head>`)
         .replace(
           /<title>.*?<\/title>/,
-          `<title>${ctx.config.app.shortName}</title>`,
+          `<title>${ctx.config.shortName}</title>`,
         )
         .replace(
           /<meta name="theme-color" content=".*?" \/>/,
@@ -203,7 +233,7 @@ ${colorVariables}
         )
         .replace(
           /<meta name="description" content=".*?" \/>/,
-          `<meta name="description" content="${ctx.config.app.description}" />`,
+          `<meta name="description" content="${ctx.config.description}" />`,
         )
         .replace(
           /<link rel="icon" type="image\/x-icon" href=".*?" \/>/,

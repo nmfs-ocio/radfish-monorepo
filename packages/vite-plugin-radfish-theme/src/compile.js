@@ -26,15 +26,28 @@ export function needsRecompilation(cacheDir, tokensPath) {
 
 /**
  * Generate SCSS entry file content for USWDS compilation
+ * @param {Object} uswdsTokens - Parsed variables from SCSS file
+ * @param {boolean} isUswdsConfig - If true, variables use USWDS format as-is. If false (legacy), apply transformation
  */
-export function generateUswdsEntryScss(uswdsTokens) {
+export function generateUswdsEntryScss(uswdsTokens, isUswdsConfig = false) {
   // Build USWDS @use statement with all token variables
   const uswdsTokensStr = Object.entries(uswdsTokens)
     .map(([key, value]) => {
-      // Convert camelCase to kebab-case for USWDS format
-      const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
-      // Convert kebab-case to USWDS format: base-lightest → theme-color-base-lightest
-      const uswdsKey = `theme-color-${kebabKey}`;
+      let uswdsKey;
+
+      if (isUswdsConfig) {
+        // New approach: uswds-config.scss variables are already in USWDS format
+        // Use them as-is (e.g., "themeColorPrimary" → "$theme-color-primary")
+        const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+        uswdsKey = kebabKey;
+      } else {
+        // Legacy approach: theme.scss variables are auto-transformed
+        // Convert camelCase to kebab-case for USWDS format
+        const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+        // Add theme-color- prefix for backward compatibility
+        uswdsKey = `theme-color-${kebabKey}`;
+      }
+
       // Format value: hex colors unquoted, token names quoted
       const formattedValue = formatUswdsValue(value);
       return `  $${uswdsKey}: ${formattedValue}`;
@@ -59,12 +72,17 @@ ${uswdsTokensStr},
 
 /**
  * Pre-compile USWDS with theme tokens to a static CSS file
+ * @param {string} themeDir - Theme directory path
+ * @param {string} themeName - Theme name for cache
+ * @param {Object} uswdsTokens - Parsed SCSS variables
+ * @param {boolean} isUswdsConfig - Whether tokens come from uswds-config.scss (new) or theme.scss (legacy)
  */
-export function precompileUswds(themeDir, themeName, uswdsTokens) {
+export function precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig = false) {
   const cacheDir = getCacheDir(themeName);
   const entryPath = path.join(cacheDir, "_uswds-entry.scss");
   const outputPath = path.join(cacheDir, "uswds-precompiled.css");
-  const tokensPath = path.join(themeDir, "styles", "theme.scss");
+  const uswdsConfigPath = path.join(themeDir, "styles", "uswds-config.scss");
+  const tokensPath = isUswdsConfig ? uswdsConfigPath : path.join(themeDir, "styles", "theme.scss");
 
   // Ensure cache directory exists
   if (!fs.existsSync(cacheDir)) {
@@ -74,8 +92,8 @@ export function precompileUswds(themeDir, themeName, uswdsTokens) {
   console.log("[radfish-theme] Pre-compiling USWDS...");
   const startTime = Date.now();
 
-  // Generate entry SCSS with tokens
-  const entryContent = generateUswdsEntryScss(uswdsTokens);
+  // Generate entry SCSS with tokens (pass isUswdsConfig flag for conditional transformation)
+  const entryContent = generateUswdsEntryScss(uswdsTokens, isUswdsConfig);
   fs.writeFileSync(entryPath, entryContent);
 
   // Compile with sass

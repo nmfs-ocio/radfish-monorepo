@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { ErrorBoundary } from "@nmfs-radfish/react-radfish";
+import { ErrorBoundary } from "@nmfs-ocio/react-radfish";
 import "./styles/theme.css";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Application } from "@nmfs-radfish/radfish";
+import { Application } from "@nmfs-ocio/radfish";
 
 const app = new Application({
   serviceWorker: {

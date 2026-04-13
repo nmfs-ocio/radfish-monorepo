@@ -1,6 +1,6 @@
 import "../styles/theme.css";
 import React, { useState } from "react";
-import { dispatchToast } from "@nmfs-radfish/react-radfish";
+import { dispatchToast } from "@nmfs-ocio/react-radfish";
 import {
   Button,
   ErrorMessage,

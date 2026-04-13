@@ -1,6 +1,6 @@
 {
-  "name": "@nmfs-radfish/radfish",
-  "version": "1.1.6",
+  "name": "@nmfs-ocio/radfish",
+  "version": "1.1.7-rc.5",
   "type": "module",
   "exports": {
     ".": "./index.js",
@@ -15,8 +15,7 @@
   "license": "ISC",
   "description": "",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
     "dexie": "4.0.x"

@@ -1,120 +1,20 @@
 /**
- * NOAA Fisheries Brand Theme
+ * NOAA Fisheries Brand Theme - Component Overrides & Custom Properties
  *
- * This single file contains all theme configuration:
- *   1. USWDS Token Variables ($variables) - extracted by the RADFish plugin for USWDS configuration
- *   2. CSS Custom Properties (:root) - additional NOAA-specific variables
- *   3. Component Overrides - custom styles for USWDS/RADFish components
+ * USWDS TOKEN CONFIGURATION:
+ *   → See uswds-config.scss for all USWDS token variable definitions
+ *   → That file is automatically loaded by the RADFish plugin for USWDS compilation
  *
- * NOAA Palette → USWDS Token Mapping:
- *   NOAA Dark Blue (Reflex Blue #0055A4)   → primary-*
- *   NOAA Light Blue (Process Blue #0093D0) → secondary-*
- *   URCHIN (Purples)                       → accent-cool-*
- *   CRUSTACEAN (Orange)                    → accent-warm-*
- *   SEAGRASS (Greens)                      → success-*
- *   CORAL (Reds)                           → error-*
- *   Neutrals                               → base-*
+ * THIS FILE (theme.scss) contains:
+ *   1. CSS Custom Properties (:root) - NOAA-specific variables
+ *   2. Component Overrides - custom styles for USWDS/RADFish components
+ *
+ * You can now freely use SCSS variables here without worrying about
+ * accidental extraction as USWDS tokens!
  */
 
 // =============================================================================
-// SECTION 1: USWDS TOKEN VARIABLES
-// These $variables are extracted by the RADFish plugin and fed to USWDS.
-// They configure the design system colors but don't produce CSS output directly.
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// BASE COLORS - NOAA Neutrals
-// -----------------------------------------------------------------------------
-$base-lightest: #ffffff;
-$base-lighter: #e8e8e8;
-$base-light: #d0d0d0;
-$base: #71767a; // USWDS gray-50 (better contrast)
-$base-dark: #7b7b7b;
-$base-darker: #4a4a4a; // Darkened for AA contrast with base-lighter links
-$base-darkest: #333333;
-
-// -----------------------------------------------------------------------------
-// PRIMARY - NOAA Dark Blue (Reflex Blue)
-// Main brand color from NOAA Fisheries Primary Palette
-// -----------------------------------------------------------------------------
-$primary-lighter: #b2def1; // 15% tint
-$primary-light: #59b9e0; // 30% tint
-$primary: #0055a4; // Reflex Blue - NOAA Dark Blue (main brand)
-$primary-vivid: #0055a4; // Reflex Blue
-$primary-dark: #00467f; // Navy Blue (Pantone 541)
-$primary-darker: #002d4d; // Darker Navy
-
-// -----------------------------------------------------------------------------
-// SECONDARY - NOAA Light Blue (Process Blue)
-// From NOAA Fisheries Primary Palette
-// -----------------------------------------------------------------------------
-$secondary-lighter: #d9eff8; // 15% tint
-$secondary-light: #59b9e0; // 30% tint
-$secondary: #007eb5; // Darkened Process Blue for AA contrast
-$secondary-vivid: #0093d0; // Process Blue (original)
-$secondary-dark: #006a99; // Darker for AA contrast with white text
-$secondary-darker: #00557a; // Darkest Process Blue
-
-// -----------------------------------------------------------------------------
-// ACCENT-COOL - URCHIN (Purples)
-// -----------------------------------------------------------------------------
-$accent-cool-lighter: #c9c9ff; // Light tint
-$accent-cool-light: #9f9fff; // Mid tint
-$accent-cool: #5a5ae6; // Darkened for AA contrast with white text
-$accent-cool-dark: #625bc4; // PMS 2725
-$accent-cool-darker: #575195; // PMS 7670
-
-// -----------------------------------------------------------------------------
-// ACCENT-WARM - CRUSTACEAN (Oranges)
-// -----------------------------------------------------------------------------
-$accent-warm-lighter: #ffd9b3; // Light tint
-$accent-warm-light: #ffb366; // Mid tint
-$accent-warm: #ff8300; // PMS 151
-$accent-warm-dark: #b54d00; // Darkened for AA contrast with white text
-$accent-warm-darker: #bc4700; // PMS 1525
-
-// -----------------------------------------------------------------------------
-// STATE COLORS
-// -----------------------------------------------------------------------------
-
-// INFO - WAVES (Teal)
-$info-lighter: #e0f7f8;
-$info-light: #5de0e6;
-$info: #1ecad3; // PMS 319
-$info-dark: #008998; // PMS 321
-$info-darker: #007078; // PMS 322
-
-// ERROR - CORAL (Red)
-$error-lighter: #ffe5e4;
-$error-light: #ff7a73;
-$error: #d02c2f; // PMS 711
-$error-dark: #b2292e; // PMS 1805
-$error-darker: #8b1f24;
-
-// WARNING - CRUSTACEAN (Orange)
-$warning-lighter: #fff3e0;
-$warning-light: #ffd9b3;
-$warning: #ff8300; // PMS 151
-$warning-dark: #d65f00; // PMS 717
-$warning-darker: #bc4700; // PMS 1525
-
-// SUCCESS - SEAGRASS (Greens)
-$success-lighter: #e8f5d6; // Light tint
-$success-light: #b8e67d; // Mid tint
-$success: #93d500; // PMS 375
-$success-dark: #4c9c2e; // PMS 362
-$success-darker: #007934; // PMS 356
-
-// -----------------------------------------------------------------------------
-// DISABLED STATE
-// -----------------------------------------------------------------------------
-$disabled-light: #e8e8e8;
-$disabled: #d0d0d0;
-$disabled-dark: #9a9a9a;
-
-
-// =============================================================================
-// SECTION 2: CSS CUSTOM PROPERTIES
+// SECTION 1: CSS CUSTOM PROPERTIES
 // These extend the USWDS theme tokens for NOAA-specific needs.
 // Available throughout your application via var(--noaa-*).
 // =============================================================================
@@ -172,7 +72,7 @@ $disabled-dark: #9a9a9a;
 
 
 // =============================================================================
-// SECTION 3: COMPONENT OVERRIDES
+// SECTION 2: COMPONENT OVERRIDES
 // Customize RADFish and USWDS components here.
 //
 // Available CSS variables (injected by RADFish plugin):
