@@ -1,6 +1,6 @@
 {
   "name": "@nmfs-ocio/radfish",
-  "version": "1.1.7-rc.5",
+  "version": "1.1.7",
   "type": "module",
   "exports": {
     ".": "./index.js",
