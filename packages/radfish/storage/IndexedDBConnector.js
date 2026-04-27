@@ -18,6 +18,7 @@ class IndexedDBEngine extends Engine {
     this.version = version;
     this.db = null;
     this.schemas = {};
+    this._schemaQueue = Promise.resolve();
   }
 
   /**
@@ -49,19 +50,31 @@ class IndexedDBEngine extends Engine {
   }
 
   /**
-   * Add a schema to the engine
+   * Add a schema to the engine. Calls are serialized through an internal queue
+   * to prevent race conditions when multiple schemas are added concurrently.
    * @param {string} tableName - The name of the table to create
    * @param {Object} schema - Schema definition with field information
    * @returns {Promise<void>} - Promise that resolves when schema is added
    */
-  async addSchema(tableName, schema) {
+  addSchema(tableName, schema) {
+    this._schemaQueue = this._schemaQueue.then(() =>
+      this._addSchemaInternal(tableName, schema)
+    );
+    return this._schemaQueue;
+  }
+
+  /**
+   * Internal implementation of addSchema, executed sequentially via the queue.
+   * @private
+   */
+  async _addSchemaInternal(tableName, schema) {
     if (!this.db) {
       throw new Error('Database not initialized. Call initialize() first.');
     }
-    
+
     // Generate Dexie schema string (e.g. "++id,name,email")
     const schemaFields = [];
-    
+
     // Get the primary key from the schema
     const primaryKeyField = schema._schema.primaryKey;
 
@@ -71,7 +84,7 @@ class IndexedDBEngine extends Engine {
       if (fieldName === primaryKeyField && fieldDef.autoIncrement) {
         schemaFields.push(`++${fieldName}`);
       }
-      // Regular primary key 
+      // Regular primary key
       else if (fieldName === primaryKeyField) {
         schemaFields.push(`&${fieldName}`);
       }
@@ -88,7 +101,7 @@ class IndexedDBEngine extends Engine {
         schemaFields.push(`&${fieldName}`);
       }
     });
-    
+
     // Make sure we have at least one field in the schema
     if (schemaFields.length === 0) {
       console.warn(`No indexed fields found for schema '${tableName}'. Adding primary key field.`);
@@ -96,35 +109,35 @@ class IndexedDBEngine extends Engine {
       const firstField = Object.keys(schema._schema.properties)[0];
       schemaFields.push(`&${firstField}`);
     }
-    
+
     // Store the schema definition
-    this.schemas[tableName] = { 
+    this.schemas[tableName] = {
       dexieSchema: schemaFields.join(','),
       primaryKey: primaryKeyField,
       schema: schema  // Store the full schema reference
     };
-    
+
     try {
       // Close current version
       this.db.close();
-      
+
       // Create new version with updated schema
       const newDb = new Dexie(this.dbName);
-      
+
       // Collect all current schemas
       const allSchemas = {};
       Object.entries(this.schemas).forEach(([table, { dexieSchema }]) => {
         allSchemas[table] = dexieSchema;
       });
-      
+
       // Create new version
       newDb.version(this.version + 1).stores(allSchemas);
-      
+
       // Open the new database and wait for it to complete
       await newDb.open();
       this.db = newDb;
       this.version++;
-      
+
       console.log(`Schema added for '${tableName}' with fields: ${schemaFields.join(',')}`);
     } catch (error) {
       console.error(`Failed to update schema for '${tableName}':`, error);
