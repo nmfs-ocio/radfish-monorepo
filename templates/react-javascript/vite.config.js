@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
-import { radFishThemePlugin } from "@nmfs-ocio/vite-plugin-radfish-theme";
+import { radFishThemePlugin } from "@nmfs-radfish/vite-plugin-radfish-theme";
 
 /**
  * RADFish Theme Configuration
