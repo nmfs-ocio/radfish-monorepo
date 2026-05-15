@@ -57,10 +57,13 @@ class IndexedDBEngine extends Engine {
    * @returns {Promise<void>} - Promise that resolves when schema is added
    */
   addSchema(tableName, schema) {
-    this._schemaQueue = this._schemaQueue.then(() =>
+    const next = this._schemaQueue.then(() =>
       this._addSchemaInternal(tableName, schema)
     );
-    return this._schemaQueue;
+    // `.catch(() => {})` keeps the queue alive after a rejection so one failure
+    // doesn't poison later calls; `next` still surfaces the real error.
+    this._schemaQueue = next.catch(() => {});
+    return next;
   }
 
   /**
