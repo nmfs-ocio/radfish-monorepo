@@ -82,19 +82,24 @@ export function getManifestIcons() {
  * Strips query strings from the request URL before resolving.
  */
 export function createStaticAssetHandler(rootDir) {
+  // Normalize root once so the traversal check below is robust against trailing
+  // slashes and prefix-collision (e.g. /foo allowing /foobar through).
+  const root = path.resolve(rootDir);
+  const rootWithSep = root + path.sep;
+
   return (req, res, next) => {
     const url = (req.url || "").split("?")[0];
     const relative = url.replace(/^\//, "");
-    const filePath = path.resolve(rootDir, relative);
+    const filePath = path.resolve(root, relative);
 
-    // Prevent path traversal attacks
-    if (!filePath.startsWith(rootDir)) {
+    // Prevent path traversal: filePath must be the root itself or a descendant.
+    if (filePath !== root && !filePath.startsWith(rootWithSep)) {
       return next();
     }
 
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       res.setHeader("Content-Type", getContentType(path.extname(filePath)));
-      fs.createReadStream(filePath).pipe(res);
+      fs.createReadStream(filePath).on("error", next).pipe(res);
     } else {
       next();
     }

@@ -67,6 +67,7 @@ export function generateUswdsEntryScss(uswdsTokens, isUswdsConfig = false, optio
   // configured them — @use ... with (...) errors on duplicate keys.
   const hasImagePath = isUswdsConfig && "themeImagePath" in uswdsTokens;
   const hasFontPath = isUswdsConfig && "themeFontPath" in uswdsTokens;
+  const hasShowNotifications = isUswdsConfig && "themeShowNotifications" in uswdsTokens;
 
   const extraLines = [];
   if (!hasImagePath) {
@@ -75,7 +76,9 @@ export function generateUswdsEntryScss(uswdsTokens, isUswdsConfig = false, optio
   if (!hasFontPath) {
     extraLines.push(`  $theme-font-path: "${basePrefix}/uswds-fonts"`);
   }
-  extraLines.push(`  $theme-show-notifications: false`);
+  if (!hasShowNotifications) {
+    extraLines.push(`  $theme-show-notifications: false`);
+  }
 
   const allLines = [...tokenLines, ...extraLines].join(",\n");
 
