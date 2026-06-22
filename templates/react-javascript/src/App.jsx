@@ -34,6 +34,7 @@ import {
 } from "@trussworks/react-uswds";
 
 import HomePage from "./pages/Home";
+import LoggerDemo from "./pages/LoggerDemo";
 
 function onToggle(index, setIsOpen) {
   setIsOpen((prev) => prev.map((val, i) => (i === index ? !val : false)));
@@ -72,8 +73,8 @@ function App({ application }) {
     <Link to="/" key="two" className="usa-nav__link">
       <span>Parent link</span>
     </Link>,
-    <Link to="/" key="three" className="usa-nav__link">
-      <span>Parent link</span>
+    <Link to="/logger-demo" key="three" className="usa-nav__link">
+      <span>Logger Demo</span>
     </Link>,
   ];
 
@@ -120,6 +121,7 @@ function App({ application }) {
           <GridContainer>
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/logger-demo" element={<LoggerDemo />} />
               {/* Add more routes here:
                   <Route path="/about" element={<AboutPage />} />
               */}
