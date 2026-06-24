@@ -204,7 +204,10 @@ export class Logger {
       stream,
       level,
       message,
-      attributes,
+      // Shallow-clone so middleware that enriches the record (e.g.
+      // `record.attributes.sessionId = ...`) can't mutate the caller's object
+      // or leak across records when an attrs object is reused/memoized.
+      attributes: { ...attributes },
     };
     this._queue.push(record);
     this._drain();
@@ -214,8 +217,11 @@ export class Logger {
     if (this._draining) return;
     this._draining = true;
     try {
+      // Records enqueue in timestamp order already (timestamp is stamped at
+      // call time, and Date.now() is non-decreasing), so one sort up front is
+      // enough — re-sorting the whole queue on every shift was O(n²·log n).
+      this._queue.sort((a, b) => a.timestamp - b.timestamp);
       while (this._queue.length) {
-        this._queue.sort((a, b) => a.timestamp - b.timestamp);
         const record = this._queue.shift();
         await this._runPipeline(record);
       }

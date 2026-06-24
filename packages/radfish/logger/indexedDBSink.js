@@ -40,12 +40,23 @@ const byteSize = (item) => encoder.encode(JSON.stringify(item)).length;
 // string like "5MB", "500 kb", "1.5gb". Binary units (1KB = 1024 bytes).
 const SIZE_UNITS = { b: 1, kb: 1024, mb: 1024 ** 2, gb: 1024 ** 3 };
 function parseSize(value) {
-  if (typeof value === "number") return value;
-  const match = /^\s*([\d.]+)\s*(b|kb|mb|gb)?\s*$/i.exec(String(value));
-  if (!match) {
-    throw new Error(`Invalid maxSize: "${value}". Use a string like "5MB"/"500KB" or a number of bytes.`);
+  let bytes;
+  if (typeof value === "number") {
+    bytes = value;
+  } else {
+    const match = /^\s*([\d.]+)\s*(b|kb|mb|gb)?\s*$/i.exec(String(value));
+    if (!match) {
+      throw new Error(`Invalid maxSize: "${value}". Use a string like "5MB"/"500KB" or a positive number of bytes.`);
+    }
+    bytes = parseFloat(match[1]) * SIZE_UNITS[(match[2] || "b").toLowerCase()];
   }
-  return Math.round(parseFloat(match[1]) * SIZE_UNITS[(match[2] || "b").toLowerCase()]);
+  // Reject NaN / Infinity / <= 0. A silently-bad budget (e.g. "." -> NaN, or a
+  // negative number) would disable trimming entirely and let the store grow
+  // without bound — exactly what maxSize exists to prevent.
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    throw new Error(`Invalid maxSize: "${value}". Must be a positive size like "5MB" or a positive number of bytes.`);
+  }
+  return Math.round(bytes);
 }
 
 function openDB(dbName) {
@@ -73,32 +84,12 @@ function txDone(tx) {
   });
 }
 
-// Evict oldest records until the store's total serialized size fits maxBytes.
-// Records come back keyed oldest-first (autoIncrement _id), so we drop from the
-// front. The most recent record is always kept, even if it alone exceeds budget.
-async function trim(db, storeName, maxBytes) {
-  const tx = db.transaction(storeName, "readwrite");
-  const store = tx.objectStore(storeName);
-  const items = await new Promise((resolve, reject) => {
-    const r = store.getAll();
-    r.onsuccess = () => resolve(r.result || []);
-    r.onerror = () => reject(r.error);
-  });
-  let total = items.reduce((sum, it) => sum + byteSize(it), 0);
-  let i = 0;
-  while (total > maxBytes && i < items.length - 1) {
-    store.delete(items[i]._id);
-    total -= byteSize(items[i]);
-    i++;
-  }
-  await txDone(tx);
-}
-
-async function addTo(db, storeName, item, maxBytes) {
-  const tx = db.transaction(storeName, "readwrite");
-  tx.objectStore(storeName).add(item);
-  await txDone(tx);
-  if (maxBytes) await trim(db, storeName, maxBytes);
+// Size of a record as we account for it: the clean payload WITHOUT the
+// auto-increment `_id`, so seeding (which reads stored rows that have an `_id`)
+// and incremental adds measure the same shape.
+function accountedSize(item) {
+  const { _id, ...rest } = item;
+  return byteSize(rest);
 }
 
 function getAllFrom(db, storeName) {
@@ -121,30 +112,96 @@ export function createIndexedDBSink({ dbName = "radfish-logs", maxSize = DEFAULT
   let dbPromise;
   const db = () => (dbPromise ||= openDB(dbName));
 
+  // Running byte total + record count per store, seeded once from disk on first
+  // use and then maintained incrementally. This avoids re-reading and
+  // re-serializing the ENTIRE store on every write (which was O(n) per write →
+  // O(n²) over a session). The common write path now touches only the new
+  // record, plus any oldest rows it has to evict.
+  const stats = {
+    [LOGS]: { bytes: 0, count: 0, seeded: false },
+    [DIAGNOSTICS]: { bytes: 0, count: 0, seeded: false },
+  };
+
+  async function seed(database, storeName) {
+    const s = stats[storeName];
+    if (s.seeded) return;
+    const items = await getAllFrom(database, storeName);
+    s.bytes = items.reduce((sum, it) => sum + accountedSize(it), 0);
+    s.count = items.length;
+    s.seeded = true;
+  }
+
+  function resetStats(storeName) {
+    stats[storeName] = { bytes: 0, count: 0, seeded: true };
+  }
+
+  // Add a record, then evict oldest-first until within budget. A cursor walks
+  // from the oldest record and stops as soon as the budget is met (or only the
+  // single newest record remains — it is always kept, even if it alone exceeds
+  // the budget). The common case deletes nothing.
+  async function addTo(storeName, item) {
+    const database = await db();
+    await seed(database, storeName);
+
+    const addTx = database.transaction(storeName, "readwrite");
+    addTx.objectStore(storeName).add(item);
+    await txDone(addTx);
+    const s = stats[storeName];
+    s.bytes += accountedSize(item);
+    s.count += 1;
+
+    if (s.bytes <= maxBytes || s.count <= 1) return;
+
+    const evictTx = database.transaction(storeName, "readwrite");
+    const store = evictTx.objectStore(storeName);
+    await new Promise((resolve, reject) => {
+      const req = store.openCursor(); // ascending key order = oldest first
+      req.onsuccess = () => {
+        const cursor = req.result;
+        if (!cursor || s.bytes <= maxBytes || s.count <= 1) return resolve();
+        cursor.delete();
+        s.bytes -= accountedSize(cursor.value);
+        s.count -= 1;
+        cursor.continue();
+      };
+      req.onerror = () => reject(req.error);
+    });
+    await txDone(evictTx);
+  }
+
   return {
     dbName,
     // --- Logger sink contract ---
     write: async (record) => {
       if (!hasIDB()) return;
       const { _fromStorage, _id, ...clean } = record; // strip UI/key-only fields
-      await addTo(await db(), LOGS, clean, maxBytes);
+      await addTo(LOGS, clean);
     },
     close: async ({ purge } = {}) => {
-      if (purge && hasIDB()) await clearStore(await db(), LOGS);
+      if (purge && hasIDB()) {
+        await clearStore(await db(), LOGS);
+        resetStats(LOGS);
+      }
     },
     // --- persistence helpers (for hydration / clearing from the app) ---
     loadLogs: async () => (hasIDB() ? getAllFrom(await db(), LOGS) : []),
     clearLogs: async () => {
-      if (hasIDB()) await clearStore(await db(), LOGS);
+      if (hasIDB()) {
+        await clearStore(await db(), LOGS);
+        resetStats(LOGS);
+      }
     },
     saveDiagnostic: async (meta) => {
       if (!hasIDB()) return;
       const { kind, stream, reason, timestamp } = meta; // metadata only — never a payload
-      await addTo(await db(), DIAGNOSTICS, { kind, stream, reason: reason ?? null, timestamp }, maxBytes);
+      await addTo(DIAGNOSTICS, { kind, stream, reason: reason ?? null, timestamp });
     },
     loadDiagnostics: async () => (hasIDB() ? getAllFrom(await db(), DIAGNOSTICS) : []),
     clearDiagnostics: async () => {
-      if (hasIDB()) await clearStore(await db(), DIAGNOSTICS);
+      if (hasIDB()) {
+        await clearStore(await db(), DIAGNOSTICS);
+        resetStats(DIAGNOSTICS);
+      }
     },
   };
 }
