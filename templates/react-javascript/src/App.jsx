@@ -72,6 +72,9 @@ function App({ application }) {
     <Link to="/" key="two" className="usa-nav__link">
       <span>Parent link</span>
     </Link>,
+    <Link to="/" key="three" className="usa-nav__link">
+      <span>Parent link</span>
+    </Link>,
   ];
 
   const secondaryItems = [
