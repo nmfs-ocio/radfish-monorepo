@@ -61,6 +61,7 @@ export function radFishThemePlugin(options = {}) {
     resolvedViteConfig: null,
     themeDir: null,
     themeName,
+    base: "/",
   };
 
   return {
@@ -70,6 +71,9 @@ export function radFishThemePlugin(options = {}) {
     async config(viteConfig) {
       // Determine root directory
       const root = viteConfig.root || process.cwd();
+
+      // Capture Vite base for asset URL prefixing (precompiled CSS bakes URLs in)
+      ctx.base = viteConfig.base || "/";
 
       // Use the pre-merged config
       ctx.config = mergedConfig;
@@ -132,7 +136,7 @@ export function radFishThemePlugin(options = {}) {
           const cacheDir = getCacheDir(themeName);
 
           if (needsRecompilation(cacheDir, tokensPath)) {
-            precompileUswds(themeDirPath, themeName, uswdsTokens, isUswdsConfig);
+            precompileUswds(themeDirPath, themeName, uswdsTokens, isUswdsConfig, { base: ctx.base });
           } else {
             console.log("[radfish-theme] Using cached USWDS compilation");
           }
