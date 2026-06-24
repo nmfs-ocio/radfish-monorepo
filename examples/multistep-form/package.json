@@ -9,7 +9,7 @@
     "@trussworks/react-uswds": "^10.2.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router-dom": "^7.9.3",
+    "react-router-dom": "^7.13.1",
     "workbox-background-sync": "^7.0.0",
     "workbox-broadcast-update": "^7.0.0",
     "workbox-cacheable-response": "^7.0.0",
