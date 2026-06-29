@@ -31,7 +31,7 @@ function HomePage() {
           Edit <code>src/pages/Home.jsx</code> to change this page
         </li>
         <li>
-          Replace images in <code>themes/noaa-theme/assets/</code> to change logo and favicon
+          Replace images in <code>themes/noaa-fisheries-theme/assets/</code> to change logo and favicon
         </li>
       </ul>
 

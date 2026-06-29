@@ -10,7 +10,7 @@
  *
  * Usage:
  *   radFishThemePlugin()                                              // Use default NOAA theme
- *   radFishThemePlugin({ theme: "noaa-theme", name: "My App" })      // With options
+ *   radFishThemePlugin({ theme: "noaa-fisheries-theme", name: "My App" })  // With options
  *
  * Theme Structure:
  *   themes/<theme-name>/
