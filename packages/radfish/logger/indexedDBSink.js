@@ -20,15 +20,14 @@
  * never collide.
  */
 
+// Serialized UTF-8 size of a record — what it actually costs on disk.
+import { byteSize } from "../utils/byteSize.js";
+
 const LOGS = "logs";
 const VERSION = 1;
 const DEFAULT_MAX_SIZE = "5MB";
 
 const hasIDB = () => typeof indexedDB !== "undefined";
-
-// Serialized UTF-8 size of a record — what it actually costs on disk.
-const encoder = new TextEncoder();
-const byteSize = (item) => encoder.encode(JSON.stringify(item)).length;
 
 // Parse a human-friendly size into bytes. Accepts a number (already bytes) or a
 // string like "5MB", "500 kb", "1.5gb". Binary units (1KB = 1024 bytes).
@@ -210,6 +209,7 @@ export function createIndexedDBSink({ dbName = "radfish-logs", maxSize = DEFAULT
 
   return {
     dbName,
+    maxBytes, // the logs storage budget in bytes (parsed from maxSize)
     // --- Logger sink contract ---
     write: async (record) => {
       if (!hasIDB()) return;
@@ -227,6 +227,16 @@ export function createIndexedDBSink({ dbName = "radfish-logs", maxSize = DEFAULT
         // share the same sink (and backing store) keep their logs.
         await deleteWhere(LOGS, (r) => r.stream === stream);
       }
+    },
+    // Accounted bytes currently stored in the logs store. Uses the sink's own
+    // running byte counter (seeding it once from disk if needed), so it reports
+    // logs usage on every browser — unlike navigator.storage, which can't break
+    // usage down per-database outside Chromium.
+    usage: async () => {
+      if (!hasIDB()) return 0;
+      const database = await db();
+      await seed(database, LOGS);
+      return stats[LOGS].bytes;
     },
     // --- persistence helpers (for hydration / clearing from the app) ---
     loadLogs: async () => (hasIDB() ? getAllFrom(await db(), LOGS) : []),

@@ -2,6 +2,12 @@ import { Store, Schema, LocalStorageConnector, IndexedDBConnector } from './stor
 import { StorageMethod, IndexedDBMethod, LocalStorageMethod } from "./on-device-storage/storage/index.js";
 import { Logger } from "./logger/Logger.js";
 import { createIndexedDBSink } from "./logger/indexedDBSink.js";
+import {
+  getStorageEstimate as readStorageEstimate,
+  requestPersistence as requestPersistentStorage,
+  getPersistenceStatus as readPersistenceStatus,
+  levelFor,
+} from "./storage-manager/index.js";
 
 const registerServiceWorker = async (url) => {
   if ("serviceWorker" in navigator) {
@@ -33,6 +39,12 @@ export class Application {
 
     // Build the logger synchronously so `app.logger` is available immediately.
     this.logger = this._createLogger(options.logger);
+
+    // Populated during _initialize() once stores are open. See getStorageEstimate().
+    this.storageEstimate = null;
+    // Optional testing/demo override for the storage quota (bytes). null = use
+    // the browser's real quota. Set via simulateQuota().
+    this._simulatedQuotaBytes = null;
 
     // Register event listeners
     this._registerEventListeners();
@@ -165,10 +177,166 @@ export class Application {
       await Promise.all(storeInitPromises);
     }
 
+    // Capture an initial storage snapshot now that the stores (if any) are open.
+    await this._captureInitialStorage();
+
     // Dispatch the init event
     this._dispatch("init");
-    
+
     return true;
+  }
+
+  /**
+   * Take the first storage estimate at init, optionally request persistent
+   * storage, and emit `storage:pressure` if usage is already at a warning level.
+   * Storage measurement must never break app init, so this never throws.
+   * @private
+   */
+  async _captureInitialStorage() {
+    const config = this._options.storageManager || {};
+    try {
+      // Request persistence fire-and-forget — persist() can prompt (Firefox), so
+      // we must not block init/ready on it. Once the grant resolves we re-run
+      // getStorageEstimate() so the cached snapshot's `persisted` reflects the
+      // post-grant state (the initial snapshot below may read persisted() before
+      // the grant lands, and requestPersistence()'s own patch is skipped while
+      // this.storageEstimate is still null).
+      if (config.persist) {
+        this.requestPersistence()
+          .then(() => this.getStorageEstimate())
+          .catch(() => {});
+      }
+      // getStorageEstimate() captures the snapshot and emits storage:pressure if
+      // we're already under pressure at startup.
+      await this.getStorageEstimate();
+    } catch {
+      // never let storage measurement break initialization
+    }
+  }
+
+  /**
+   * Read a fresh storage estimate, augmented with RADFish-specific info the
+   * browser can't provide: the logger's own byte usage and the names of the
+   * IndexedDB databases RADFish owns. Also refreshes the cached `storageEstimate`.
+   * @returns {Promise<import('./storage-manager/index.js').StorageSnapshot & { logsBytes: number|null, databases: string[] }>}
+   */
+  async getStorageEstimate() {
+    const config = this._options.storageManager || {};
+    const snapshot = await readStorageEstimate({
+      warnAt: config.warnAt,
+      criticalAt: config.criticalAt,
+    });
+    snapshot.logsBytes = this.logger?.persistence?.usage
+      ? await this.logger.persistence.usage()
+      : null;
+
+    // Per-subsystem byte usage. RADFish measures these itself because the browser
+    // gives no per-database breakdown cross-browser (see IndexedDBConnector.usage
+    // and the logger sink). `stores` = per data-store bytes; `storesBytes` = their
+    // total; `radfishBytes` = logger + stores (all RADFish-managed storage).
+    const stores = {};
+    let storesBytes = 0;
+    for (const [name, store] of Object.entries(this.stores ?? {})) {
+      if (typeof store?.connector?.usage !== "function") continue;
+      try {
+        const bytes = await store.connector.usage();
+        // null = "not measurable right now" (e.g. mid schema-change) — skip it
+        // rather than counting it as 0, which would under-report the total.
+        if (bytes == null) continue;
+        // Keyed by dbName when present (IndexedDB), else the store name (e.g.
+        // localStorage). storesBytes sums independently, so it stays correct even
+        // if two stores share a key.
+        stores[store.connector.dbName ?? name] = bytes;
+        storesBytes += bytes;
+      } catch {
+        // a store that can't be measured shouldn't break the estimate
+      }
+    }
+    snapshot.stores = stores;
+    snapshot.storesBytes = storesBytes;
+    snapshot.radfishBytes = (snapshot.logsBytes ?? 0) + storesBytes;
+
+    snapshot.databases = this.storageDatabases();
+
+    // Testing/demo: pretend the quota is a set size so warnAt/criticalAt are
+    // reachable without actually filling hundreds of GB. Derived fields are
+    // recomputed against RADFish's OWN usage (radfishBytes), not the origin-wide
+    // usageBytes — otherwise unrelated browser storage would dominate the
+    // simulated percent on a real browser and pin it to critical. `simulated`
+    // flags the snapshot so consumers/telemetry can tell it isn't a real reading.
+    if (this._simulatedQuotaBytes != null && snapshot.supported) {
+      const quota = this._simulatedQuotaBytes;
+      const simUsage = snapshot.radfishBytes ?? 0;
+      snapshot.quotaBytes = quota;
+      snapshot.remainingBytes = Math.max(0, quota - simUsage);
+      snapshot.percentUsed = quota > 0 ? simUsage / quota : null;
+      snapshot.level = levelFor(snapshot.percentUsed, config.warnAt, config.criticalAt);
+      snapshot.simulated = true;
+    }
+
+    this._applyStorageSnapshot(snapshot);
+    return snapshot;
+  }
+
+  /**
+   * Cache the snapshot and emit on any level change: `storage:pressure` when the
+   * level moves into/between warning/critical, and `storage:ok` when it returns
+   * to ok — so an event-driven UI can both raise AND clear a pressure banner. No
+   * event when the level is unchanged.
+   * @private
+   */
+  _applyStorageSnapshot(snapshot) {
+    const previousLevel = this.storageEstimate ? this.storageEstimate.level : "ok";
+    this.storageEstimate = snapshot;
+    if (snapshot.level !== previousLevel) {
+      this._dispatch(snapshot.level === "ok" ? "storage:ok" : "storage:pressure", snapshot);
+    }
+  }
+
+  /**
+   * Testing/demo aid: override the reported storage quota (in bytes) so the
+   * warnAt/criticalAt thresholds can be exercised without filling real disk.
+   * Pass null to clear and use the browser's real quota again.
+   */
+  simulateQuota(bytes) {
+    this._simulatedQuotaBytes = bytes;
+  }
+
+  /**
+   * Request persistent storage (exempts the origin from best-effort eviction).
+   * Best called from a user gesture. Updates the cached snapshot's `persisted`.
+   * @returns {Promise<boolean>}
+   */
+  async requestPersistence() {
+    const granted = await requestPersistentStorage();
+    if (this.storageEstimate) this.storageEstimate.persisted = granted;
+    return granted;
+  }
+
+  /**
+   * Persistence capability as a tri-state: 'persisted' | 'prompt' | 'never'.
+   * @returns {Promise<'persisted'|'prompt'|'never'>}
+   */
+  async getPersistenceStatus() {
+    return readPersistenceStatus();
+  }
+
+  /**
+   * Names of the IndexedDB databases RADFish owns (each store's connector + the
+   * logs DB). Names only — the browser provides no per-database byte usage.
+   * @returns {string[]}
+   */
+  storageDatabases() {
+    const names = [];
+    for (const store of Object.values(this.stores || {})) {
+      const name = store?.connector?.dbName;
+      if (name) names.push(name);
+    }
+    const logsDb = this.logger?.persistence?.dbName;
+    if (logsDb) names.push(logsDb);
+    // Dedupe: a store dbName can coincide with the logs dbName; callers use this
+    // list to delete databases, so a name should appear at most once.
+    return [...new Set(names)];
   }
 
   get storage() {
@@ -201,6 +369,10 @@ export class Application {
 
   on(event, callback) {
     return this.emitter.addEventListener(event, callback);
+  }
+
+  off(event, callback) {
+    return this.emitter.removeEventListener(event, callback);
   }
 
   _dispatch(event, detail) {
