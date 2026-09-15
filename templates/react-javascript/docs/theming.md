@@ -7,7 +7,7 @@ This guide explains how to customize the look and feel of your RADFish applicati
 All theme customization happens in a single file:
 
 ```
-themes/noaa-theme/styles/theme.scss
+themes/noaa-fisheries-theme/styles/theme.scss
 ```
 
 This file contains three sections:
@@ -28,7 +28,7 @@ The RADFish theme plugin:
 ### Architecture
 
 ```
-themes/noaa-theme/
+themes/noaa-fisheries-theme/
 ├── assets/                    # Icons and logos
 │   ├── logo.png              # Header logo
 │   ├── favicon.ico           # Browser favicon
@@ -38,7 +38,7 @@ themes/noaa-theme/
 └── styles/
     └── theme.scss            # All theme configuration (edit this)
 
-node_modules/.cache/radfish-theme/noaa-theme/   # Auto-generated (don't edit)
+node_modules/.cache/radfish-theme/noaa-fisheries-theme/   # Auto-generated (don't edit)
 ├── _uswds-entry.scss         # Generated USWDS config
 ├── uswds-precompiled.css     # Compiled USWDS styles
 ├── theme.css                 # Compiled theme overrides
@@ -50,7 +50,7 @@ node_modules/.cache/radfish-theme/noaa-theme/   # Auto-generated (don't edit)
 At the top of `theme.scss`, define SCSS variables that configure the USWDS design system:
 
 ```scss
-/* themes/noaa-theme/styles/theme.scss */
+/* themes/noaa-fisheries-theme/styles/theme.scss */
 
 // Primary colors
 $primary: #0055a4;
@@ -91,7 +91,7 @@ See [USWDS Design Tokens](https://designsystem.digital.gov/design-tokens/color/t
 Add custom CSS variables in the `:root` block for agency-specific colors:
 
 ```scss
-/* themes/noaa-theme/styles/theme.scss */
+/* themes/noaa-fisheries-theme/styles/theme.scss */
 
 :root {
   // Brand colors
@@ -127,7 +127,7 @@ The plugin also auto-generates `--radfish-color-*` variables from your USWDS tok
 At the bottom of `theme.scss`, add custom CSS for USWDS components:
 
 ```scss
-/* themes/noaa-theme/styles/theme.scss */
+/* themes/noaa-fisheries-theme/styles/theme.scss */
 
 /* Header Background */
 .usa-header.header-container,
@@ -197,14 +197,14 @@ const configOverrides = {
   },
 };
 
-radFishThemePlugin("noaa-theme", configOverrides)
+radFishThemePlugin("noaa-fisheries-theme", configOverrides)
 ```
 
 The theme name matches the folder in `themes/` directory.
 
 ## Changing Assets
 
-Replace files in `themes/noaa-theme/assets/` to customize:
+Replace files in `themes/noaa-fisheries-theme/assets/` to customize:
 
 | File | Purpose | Recommended Size |
 |------|---------|------------------|
@@ -226,7 +226,7 @@ Replace files in `themes/noaa-theme/assets/` to customize:
 
 3. Copy and customize the theme file:
    ```bash
-   cp themes/noaa-theme/styles/theme.scss themes/my-agency/styles/
+   cp themes/noaa-fisheries-theme/styles/theme.scss themes/my-agency/styles/
    ```
 
 4. Update `vite.config.js`:

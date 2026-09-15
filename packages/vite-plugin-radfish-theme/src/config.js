@@ -4,7 +4,7 @@
  */
 export function getDefaultConfig() {
   return {
-    theme: "noaa-theme",
+    theme: "noaa-fisheries-theme",
     name: "RADFish Application",
     shortName: "RADFish",
     description: "RADFish React App",

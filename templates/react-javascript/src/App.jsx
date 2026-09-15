@@ -14,7 +14,7 @@
  *   3. Add navigation links in the ExtendedNav primaryItems array
  *
  * Theme customization:
- *   - Edit themes/noaa-theme/styles/theme.scss for colors and styles
+ *   - Edit themes/noaa-fisheries-theme/styles/theme.scss for colors and styles
  *   - App name and icons are configured in the theme plugin (vite.config.js)
  *
  * Learn more: https://nmfs-radfish.github.io/radfish/
