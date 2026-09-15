@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { getCacheDir, copyDirSync, getManifestIcons } from "./utils.js";
+import {
+  getCacheDir,
+  copyDirSync,
+  getManifestIcons,
+  getUswdsAssetDirs,
+} from "./utils.js";
 
 /**
  * closeBundle hook - write manifest.json, copy assets and CSS to dist
@@ -19,6 +24,20 @@ export function closeBundle(ctx) {
   // Ensure output directory exists
   if (!fs.existsSync(outDirPath)) {
     return; // Build hasn't created output dir yet
+  }
+
+  // Copy USWDS-bundled img and fonts to dist/uswds-img and dist/uswds-fonts so
+  // the URLs baked into the precompiled CSS resolve in production builds.
+  const { imgDir: uswdsImgDir, fontsDir: uswdsFontsDir } = getUswdsAssetDirs();
+  if (uswdsImgDir) {
+    const dest = path.join(outDirPath, "uswds-img");
+    copyDirSync(uswdsImgDir, dest);
+    console.log("[radfish-theme] Copied USWDS img to:", dest);
+  }
+  if (uswdsFontsDir) {
+    const dest = path.join(outDirPath, "uswds-fonts");
+    copyDirSync(uswdsFontsDir, dest);
+    console.log("[radfish-theme] Copied USWDS fonts to:", dest);
   }
 
   // Copy theme assets to dist/icons if using theme directory

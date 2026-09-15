@@ -4,6 +4,9 @@ import * as sass from "sass";
 import { getCacheDir, computeFileHash } from "./utils.js";
 import { formatUswdsValue } from "./scss.js";
 
+// Bump when the entry-SCSS generator changes shape so stale caches recompile.
+export const CACHE_VERSION = 2;
+
 /**
  * Check if USWDS needs recompilation based on cache
  */
@@ -18,6 +21,7 @@ export function needsRecompilation(cacheDir, tokensPath) {
 
   try {
     const cache = JSON.parse(fs.readFileSync(cachePath, "utf-8"));
+    if (cache.cacheVersion !== CACHE_VERSION) return true;
     return cache.tokensHash !== computeFileHash(tokensPath);
   } catch {
     return true;
@@ -28,31 +32,55 @@ export function needsRecompilation(cacheDir, tokensPath) {
  * Generate SCSS entry file content for USWDS compilation
  * @param {Object} uswdsTokens - Parsed variables from SCSS file
  * @param {boolean} isUswdsConfig - If true, variables use USWDS format as-is. If false (legacy), apply transformation
+ * @param {Object} [options]
+ * @param {string} [options.base="/"] - Vite base URL, prefixed onto USWDS asset paths
  */
-export function generateUswdsEntryScss(uswdsTokens, isUswdsConfig = false) {
+export function generateUswdsEntryScss(uswdsTokens, isUswdsConfig = false, options = {}) {
+  const { base = "/" } = options;
+  // Strip trailing slash so we can append /uswds-img without doubling up.
+  // A bare "/" base becomes "" — paths become "/uswds-img" not "//uswds-img".
+  const basePrefix = base.replace(/\/$/, "");
+
   // Build USWDS @use statement with all token variables
-  const uswdsTokensStr = Object.entries(uswdsTokens)
-    .map(([key, value]) => {
-      let uswdsKey;
+  const tokenLines = Object.entries(uswdsTokens).map(([key, value]) => {
+    let uswdsKey;
 
-      if (isUswdsConfig) {
-        // New approach: uswds-config.scss variables are already in USWDS format
-        // Use them as-is (e.g., "themeColorPrimary" → "$theme-color-primary")
-        const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
-        uswdsKey = kebabKey;
-      } else {
-        // Legacy approach: theme.scss variables are auto-transformed
-        // Convert camelCase to kebab-case for USWDS format
-        const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
-        // Add theme-color- prefix for backward compatibility
-        uswdsKey = `theme-color-${kebabKey}`;
-      }
+    if (isUswdsConfig) {
+      // New approach: uswds-config.scss variables are already in USWDS format
+      // Use them as-is (e.g., "themeColorPrimary" → "$theme-color-primary")
+      const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+      uswdsKey = kebabKey;
+    } else {
+      // Legacy approach: theme.scss variables are auto-transformed
+      // Convert camelCase to kebab-case for USWDS format
+      const kebabKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+      // Add theme-color- prefix for backward compatibility
+      uswdsKey = `theme-color-${kebabKey}`;
+    }
 
-      // Format value: hex colors unquoted, token names quoted
-      const formattedValue = formatUswdsValue(value);
-      return `  $${uswdsKey}: ${formattedValue}`;
-    })
-    .join(",\n");
+    // Format value: hex colors unquoted, token names quoted
+    const formattedValue = formatUswdsValue(value);
+    return `  $${uswdsKey}: ${formattedValue}`;
+  });
+
+  // Only inject our defaults if the consumer's uswds-config.scss hasn't already
+  // configured them — @use ... with (...) errors on duplicate keys.
+  const hasImagePath = isUswdsConfig && "themeImagePath" in uswdsTokens;
+  const hasFontPath = isUswdsConfig && "themeFontPath" in uswdsTokens;
+  const hasShowNotifications = isUswdsConfig && "themeShowNotifications" in uswdsTokens;
+
+  const extraLines = [];
+  if (!hasImagePath) {
+    extraLines.push(`  $theme-image-path: "${basePrefix}/uswds-img"`);
+  }
+  if (!hasFontPath) {
+    extraLines.push(`  $theme-font-path: "${basePrefix}/uswds-fonts"`);
+  }
+  if (!hasShowNotifications) {
+    extraLines.push(`  $theme-show-notifications: false`);
+  }
+
+  const allLines = [...tokenLines, ...extraLines].join(",\n");
 
   return `/**
  * AUTO-GENERATED USWDS Entry Point
@@ -62,8 +90,7 @@ export function generateUswdsEntryScss(uswdsTokens, isUswdsConfig = false) {
  */
 
 @use "uswds-core" with (
-${uswdsTokensStr},
-  $theme-show-notifications: false
+${allLines}
 );
 
 @forward "uswds";
@@ -76,8 +103,10 @@ ${uswdsTokensStr},
  * @param {string} themeName - Theme name for cache
  * @param {Object} uswdsTokens - Parsed SCSS variables
  * @param {boolean} isUswdsConfig - Whether tokens come from uswds-config.scss (new) or theme.scss (legacy)
+ * @param {Object} [options]
+ * @param {string} [options.base="/"] - Vite base URL, prefixed onto USWDS asset paths
  */
-export function precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig = false) {
+export function precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig = false, options = {}) {
   const cacheDir = getCacheDir(themeName);
   const entryPath = path.join(cacheDir, "_uswds-entry.scss");
   const outputPath = path.join(cacheDir, "uswds-precompiled.css");
@@ -93,7 +122,7 @@ export function precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig 
   const startTime = Date.now();
 
   // Generate entry SCSS with tokens (pass isUswdsConfig flag for conditional transformation)
-  const entryContent = generateUswdsEntryScss(uswdsTokens, isUswdsConfig);
+  const entryContent = generateUswdsEntryScss(uswdsTokens, isUswdsConfig, options);
   fs.writeFileSync(entryPath, entryContent);
 
   // Compile with sass
@@ -108,6 +137,7 @@ export function precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig 
   // Save cache manifest
   const cacheData = {
     tokensHash: computeFileHash(tokensPath),
+    cacheVersion: CACHE_VERSION,
     compiledAt: new Date().toISOString(),
   };
   fs.writeFileSync(

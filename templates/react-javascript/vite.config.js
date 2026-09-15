@@ -7,7 +7,7 @@ import { radFishThemePlugin } from "@nmfs-ocio/vite-plugin-radfish-theme";
  * RADFish Theme Configuration
  *
  * IMPORTANT: Change theme settings in ONE place:
- *   themes/noaa-theme/styles/theme.scss
+ *   themes/noaa-fisheries-theme/styles/theme.scss
  *
  * The radFishThemePlugin automatically:
  *   - Parses theme.scss and generates _uswds-generated.scss
@@ -17,10 +17,10 @@ import { radFishThemePlugin } from "@nmfs-ocio/vite-plugin-radfish-theme";
  *
  * Usage:
  *   radFishThemePlugin()                                              // Use default NOAA theme
- *   radFishThemePlugin({ theme: "noaa-theme", name: "My App" })      // With options
+ *   radFishThemePlugin({ theme: "noaa-fisheries-theme", name: "My App" })  // With options
  *
  * Available themes (in themes/ folder):
- *   - noaa-theme: Default NOAA branding with USWDS colors
+ *   - noaa-fisheries-theme: Default NOAA branding with USWDS colors
  */
 
 export default defineConfig({
@@ -41,7 +41,7 @@ export default defineConfig({
     // - CSS variable injection
     // - manifest.json generation on build
     radFishThemePlugin({
-      theme: "noaa-theme",
+      theme: "noaa-fisheries-theme",
       name: "RADFish Boilerplate",
       shortName: "RADFish Boilerplate",
       description: "Offline-first fisheries data collection built with RADFish",

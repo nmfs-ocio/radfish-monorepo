@@ -20,7 +20,7 @@ describe("getDefaultConfig", () => {
 
   it("returns default values", () => {
     const config = getDefaultConfig();
-    expect(config.theme).toBe("noaa-theme");
+    expect(config.theme).toBe("noaa-fisheries-theme");
     expect(config.name).toBe("RADFish Application");
     expect(config.shortName).toBe("RADFish");
     expect(config.description).toBe("RADFish React App");

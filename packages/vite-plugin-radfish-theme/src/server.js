@@ -1,16 +1,36 @@
 import fs from "fs";
 import path from "path";
-import { getCacheDir, getContentType, getManifestIcons } from "./utils.js";
+import {
+  getCacheDir,
+  getContentType,
+  getManifestIcons,
+  createStaticAssetHandler,
+  getUswdsAssetDirs,
+} from "./utils.js";
 import { loadThemeFiles } from "./scss.js";
 import { precompileUswds, precompileThemeScss } from "./compile.js";
 
 /**
  * Configure dev server middleware and SCSS watcher
  * @param {Object} server - Vite dev server instance
- * @param {Object} ctx - Plugin context { config, themeDir, themeName }
+ * @param {Object} ctx - Plugin context { config, themeDir, themeName, base }
  */
 export function configureServer(server, ctx) {
-  const { config, themeDir, themeName } = ctx;
+  const { config, themeDir, themeName, base = "/" } = ctx;
+
+  // Serve USWDS-bundled static assets (icons, fonts).
+  // Without this, requests like /uswds-img/usa-icons/expand_more.svg fall through to
+  // Vite's SPA fallback and return index.html with a 200 status — icons silently
+  // render blank and fonts fail with "OTS parsing error: invalid sfntVersion".
+  // Vite's baseMiddleware strips `base` before middleware sees the URL, so we mount
+  // at the plain prefix regardless of base.
+  const { imgDir: uswdsImgDir, fontsDir: uswdsFontsDir } = getUswdsAssetDirs();
+  if (uswdsImgDir) {
+    server.middlewares.use("/uswds-img", createStaticAssetHandler(uswdsImgDir));
+  }
+  if (uswdsFontsDir) {
+    server.middlewares.use("/uswds-fonts", createStaticAssetHandler(uswdsFontsDir));
+  }
 
   // Serve manifest.json in dev mode
   server.middlewares.use("/manifest.json", (_req, res) => {
@@ -72,7 +92,7 @@ export function configureServer(server, ctx) {
       const fileName = path.basename(changedPath);
       console.log(`[radfish-theme] ${fileName} changed, recompiling...`);
       const { uswdsTokens, isUswdsConfig } = loadThemeFiles(themeDir);
-      precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig);
+      precompileUswds(themeDir, themeName, uswdsTokens, isUswdsConfig, { base });
       precompileThemeScss(themeDir, themeName);
       console.log("[radfish-theme] Restarting server...");
       server.restart();
