@@ -60,7 +60,7 @@
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-react": "^7.23.3",
     "@lhci/cli": "^0.14.0",
-    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "^16.0.1",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
