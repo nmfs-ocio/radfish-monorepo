@@ -100,4 +100,50 @@ describe('Application',  () => {
       expect(app.logger.persistence).toBeTruthy();
     });
   });
+
+  describe('service worker registration', () => {
+    let register;
+
+    beforeEach(() => {
+      register = vi.fn().mockResolvedValue({ active: {} });
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: { register },
+        configurable: true,
+      });
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      delete navigator.serviceWorker;
+      vi.restoreAllMocks();
+    });
+
+    const waitForReady = (app) =>
+      new Promise((resolve) => app.on('ready', resolve));
+
+    it('uses the browser default scope when none is configured', async () => {
+      const app = new Application({
+        serviceWorker: { url: '/my-app/service-worker.js' },
+      });
+      await waitForReady(app);
+
+      expect(register).toHaveBeenCalledWith('/my-app/service-worker.js', undefined);
+    });
+
+    it('passes a configured scope to register()', async () => {
+      const app = new Application({
+        serviceWorker: { url: '/my-app/service-worker.js', scope: '/my-app/' },
+      });
+      await waitForReady(app);
+
+      expect(register).toHaveBeenCalledWith('/my-app/service-worker.js', { scope: '/my-app/' });
+    });
+
+    it('does not register when no url is configured', async () => {
+      const app = new Application({});
+      await waitForReady(app);
+
+      expect(register).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -7,7 +7,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 const app = new Application({
   serviceWorker: {
-    url: "/service-worker.js",
+    url: `${import.meta.env.BASE_URL}service-worker.js`,
   },
 });
 
