@@ -139,6 +139,19 @@ describe('Application',  () => {
       expect(register).toHaveBeenCalledWith('/my-app/service-worker.js', { scope: '/my-app/' });
     });
 
+    it('still dispatches ready when registration fails', async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      register.mockRejectedValue(new DOMException('scope not allowed', 'SecurityError'));
+
+      const app = new Application({
+        serviceWorker: { url: '/my-app/service-worker.js', scope: '/' },
+      });
+      await waitForReady(app);
+
+      expect(app.serviceWorker).toBeFalsy();
+      expect(error).toHaveBeenCalledWith(expect.stringContaining('SecurityError'));
+    });
+
     it('does not register when no url is configured', async () => {
       const app = new Application({});
       await waitForReady(app);

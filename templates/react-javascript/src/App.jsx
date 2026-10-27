@@ -92,7 +92,7 @@ function App({ application }) {
         Skip to main content
       </a>
       <main id="main-content">
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           {/* Header - Uses USWDS Extended Header component */}
           <Header extended showMobileOverlay={isExpanded}>
             <div className="usa-navbar">
