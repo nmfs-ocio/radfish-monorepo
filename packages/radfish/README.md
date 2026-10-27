@@ -26,8 +26,8 @@ const app = new Application({
   serviceWorker: {
     url:
       import.meta.env.MODE === "development"
-        ? "/mockServiceWorker.js"
-        : "/service-worker.js",
+        ? `${import.meta.env.BASE_URL}mockServiceWorker.js`
+        : `${import.meta.env.BASE_URL}service-worker.js`,
   },
   mocks: {
     handlers: import("../mocks/browser.js"),  // Specify mock handlers for MSW
@@ -44,6 +44,13 @@ app.on("ready", () => {
   );
 });
 ```
+
+### Service worker options
+
+| Option                 | Description                                                                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `serviceWorker.url`    | URL of the service worker script. Build it from `import.meta.env.BASE_URL` so the app also works when it's deployed under a subpath such as `/my-app/`.                                                 |
+| `serviceWorker.scope`  | Optional. The paths the worker controls. Defaults to the directory the script is served from, so `/my-app/service-worker.js` controls `/my-app/`. A scope wider than that directory requires a `Service-Worker-Allowed` response header. |
 
 ## Contributing
 Contributions are welcome! If you would like to contribute, please read our [contributing guide](https://nmfs-radfish.github.io/radfish/about/contribute) and follow the steps.
