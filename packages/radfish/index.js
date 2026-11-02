@@ -9,12 +9,15 @@ import {
   levelFor,
 } from "./storage-manager/index.js";
 
-const registerServiceWorker = async (url) => {
+const registerServiceWorker = async (url, scope) => {
   if ("serviceWorker" in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register(url, {
-        scope: "/",
-      });
+      // Without an explicit scope the browser defaults to the script's directory,
+      // which is the app's base path when the worker is served from there.
+      const registration = await navigator.serviceWorker.register(
+        url,
+        scope ? { scope } : undefined
+      );
       if (registration.installing) {
         console.log("Service worker installing");
       } else if (registration.waiting) {
@@ -390,7 +393,8 @@ export class Application {
       console.debug("Application initialized");
       const worker = await this._installServiceWorker(
         this._options?.mocks?.handlers,
-        this._options?.serviceWorker?.url
+        this._options?.serviceWorker?.url,
+        this._options?.serviceWorker?.scope
       );
 
       this.serviceWorker = worker;
@@ -412,12 +416,12 @@ export class Application {
     window.addEventListener("offline", handleOffline, true);
   }
 
-  async _installServiceWorker(handlers, url) {
+  async _installServiceWorker(handlers, url, scope) {
     if (!url) return null;
     console.info("Installing service worker");
     
     try {
-      const registration = await registerServiceWorker(url);
+      const registration = await registerServiceWorker(url, scope);
       
       console.debug("Service worker installed and started successfully");
       // return worker;

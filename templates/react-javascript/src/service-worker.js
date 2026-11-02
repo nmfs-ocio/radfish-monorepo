@@ -27,6 +27,9 @@ cleanupOutdatedCaches();
 // even if you decide not to use precaching. See https://cra.link/PWA
 precacheAndRoute(self.__WB_MANIFEST);
 
+// Vite leaves BASE_URL without a trailing slash when `base` is set that way.
+const baseUrl = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
@@ -53,7 +56,7 @@ registerRoute(
     // Return true to signal that we want to use the handler.
     return true;
   },
-  createHandlerBoundToURL(import.meta.env.VITE_PUBLIC_URL + "/index.html"),
+  createHandlerBoundToURL(`${baseUrl}index.html`),
 );
 
 // An example runtime caching route for requests that aren't handled by the
