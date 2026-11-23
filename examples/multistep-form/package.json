@@ -58,7 +58,7 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-react": "^7.23.3",
-    "@lhci/cli": "^0.14.0",
+    "@lhci/cli": "^0.16.1",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "^16.0.1",
     "@vitejs/plugin-react": "^4.2.1",
@@ -73,7 +73,7 @@
     "msw": "^2.0.12",
     "pptr-testing-library": "^0.8.0",
     "prettier": "^3.1.0",
-    "puppeteer": "^23.9.0",
+    "puppeteer": "^25.18.1",
     "vite": "^5.1.5",
     "vite-plugin-pwa": "0.21.0",
     "vitest": "2.1.2"
