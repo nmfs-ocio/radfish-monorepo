@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-env": "^7.29.14",
     "@babel/preset-react": "^7.23.3",
     "@lhci/cli": "^0.14.0",
     "@nmfs-ocio/vite-plugin-radfish-theme": "^0.1.0",
